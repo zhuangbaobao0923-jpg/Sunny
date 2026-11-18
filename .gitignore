@@ -1,0 +1,74 @@
+# ================= Android =================
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# ================= iOS / Xcode =================
+# 构建产物：可再生产，绝不入库（本项目 ios/build、ios/build-sim、MBTIRoleplay/build 合计约 558MB）
+build/
+build-sim/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcworkspace/xcuserdata/
+
+# 编译中间产物
+*.o
+*.d
+*.dia
+*.hmap
+*.swiftmodule
+*.dSYM
+*.ipa
+
+# 依赖管理
+Pods/
+.swiftpm/
+Package.resolved.bak
+
+# ================= 音频临时产物 =================
+# TTS 合成缓存 / 测试音频，全项目约 249MB
+*.pcm
+
+# ================= 大体积模型资源 =================
+# 241MB，含单文件 101.7MB 的 zip（超过 GitHub 100MB 单文件硬限制，push 会被拒绝）
+# 改用 GitHub Releases 附件分发，README 中说明下载方式
+TTs语音模型/
+*.zip
+
+# ================= 密钥 / 本地配置（永不提交）=================
+Config.local.xcconfig
+Local.xcconfig
+Secrets.swift
+*.local.xcconfig
+# 本机真实密钥（复制 example 而来）；仓库里只留 LocalSecrets.example.json
+ios/AICompanion/Config/LocalSecrets.json
+ios/tools/.env
+
+# ================= 大体积图片 / 音频素材 =================
+# 生成图、截图、试听样音：可再生产，不入库
+ios/generated-portraits/
+ios/screenshots/
+ios/docs/*.png
+ios/docs/*.mp3
+ios/tools/out/
+AI聊天陪伴/
+*.wav
+
+# ================= 工作区记忆（含个人笔记与历史密钥）=================
+.workbuddy/
+
+# ================= 系统 / 编辑器 =================
+.DS_Store
+Thumbs.db

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- 允许访问本地网络上的 TTS 服务（127.0.0.1:9880 / 局域网 Mac） -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	<!-- Bonjour 自动发现 Mac 上的本地语音服务 -->
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>用于自动发现 Mac 上的本地语音服务（仅在局域网内通信，不上传任何数据到互联网）。</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_edgetts._tcp</string>
+	</array>
+	<!-- 语音通话：麦克风收音 + 系统语音识别 -->
+	<key>NSMicrophoneUsageDescription</key>
+	<string>用于语音通话时收录你说的话，识别成文字发给角色。</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>用于把你说的语音实时转成文字，与角色进行语音对话。</string>
+</dict>
+</plist>
