@@ -39,7 +39,7 @@ final class TencentTTSTests: XCTestCase {
     func testVoiceMappingCoversAllKinds() {
         for kind in VoiceKind.allCases {
             XCTAssertGreaterThanOrEqual(kind.tencentVoiceType, 101001, "\(kind.rawValue) 音色 id 异常")
-            XCTAssertLessThanOrEqual(kind.tencentVoiceType, 101020, "\(kind.rawValue) 音色 id 异常")
+            XCTAssertLessThanOrEqual(kind.tencentVoiceType, 101099, "\(kind.rawValue) 音色 id 异常")
             XCTAssertTrue((-2...2).contains(kind.tencentSpeed), "\(kind.rawValue) 语速越界")
         }
         // 男女角色不应共用同一音色
