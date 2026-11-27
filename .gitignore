@@ -76,3 +76,7 @@ Thumbs.db
 # Python 缓存
 __pycache__/
 *.pyc
+
+# IDE / WorkBuddy 本地文件
+.idea/
+*.genie
