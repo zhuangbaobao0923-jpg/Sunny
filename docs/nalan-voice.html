@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>纳兰铮：三只音色对比</title>
+<style>
+  :root{
+    --paper:#F8F7F3; --card:#FFFFFF; --ink:#17171C; --ink2:#52525E; --ink3:#8B8B96;
+    --line:#E4E1D8; --line2:#D0CCBF;
+    --indigo:#2E3A6B; --indigo-soft:#EDEFF7;
+    --amber:#9A6A12; --amber-soft:#FBF2DF;
+    --green:#2C6B52; --green-soft:#E8F2EC;
+    --serif:"Songti SC","STSong","SimSun",Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Arial,sans-serif;
+    --mono:"SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.75;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:900px;margin:0 auto;padding:60px 28px 90px}
+  .kicker{font-size:11px;letter-spacing:.2em;color:var(--amber);text-transform:uppercase;margin-bottom:16px}
+  h1{font-family:var(--serif);font-size:38px;line-height:1.3;font-weight:600;margin-bottom:12px}
+  h1 em{font-style:normal;color:var(--indigo)}
+  .lede{font-size:15px;color:var(--ink2);max-width:700px;line-height:1.85}
+  .quote{margin:22px 0 26px;padding:16px 18px;background:var(--card);border-left:3px solid var(--amber);border-radius:8px;font-size:14px;color:var(--ink2);line-height:1.8}
+  .quote b{display:block;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:5px;font-weight:500}
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:18px}
+  .card.pick{border-color:#B9BED6;box-shadow:0 0 0 3px rgba(46,58,107,.05)}
+  .card .tag{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-bottom:4px}
+  .card h2{font-family:var(--serif);font-size:20px;font-weight:600;margin-bottom:2px}
+  .card .id{font-family:var(--mono);font-size:10.5px;color:var(--ink3);margin-bottom:8px;word-break:break-all}
+  audio{width:100%;height:36px;margin:2px 0 8px}
+  .card p{font-size:12.5px;color:var(--ink2);line-height:1.65;min-height:60px}
+  .chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px}
+  .chip{font-size:10px;padding:3px 7px;border-radius:999px;background:#F1EFE8;color:#5F5E5A}
+  .chip.good{background:var(--green-soft);color:var(--green)}
+  .chip.warn{background:var(--amber-soft);color:var(--amber)}
+  .chip.blue{background:var(--indigo-soft);color:var(--indigo)}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin:18px 0;background:var(--card)}
+  thead th{text-align:left;font-weight:500;font-size:10.5px;letter-spacing:.08em;color:var(--ink3);padding:10px 12px;border-bottom:1px solid var(--line2);text-transform:uppercase;background:#FBFAF7}
+  tbody td{padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink2);line-height:1.65}
+  tbody td:first-child{color:var(--ink);font-weight:500;white-space:nowrap}
+  tbody tr:last-child td{border-bottom:none}
+  .callout{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--indigo);border-radius:10px;padding:16px 18px;margin:18px 0}
+  .callout.warn{border-left-color:var(--amber);background:var(--amber-soft)}
+  .callout .t{font-weight:600;font-size:13px;margin-bottom:4px;color:var(--ink)}
+  .callout p{font-size:12.8px;margin:3px 0;color:var(--ink2)}
+  code{font-family:var(--mono);font-size:12px;background:#EFEDE6;padding:1.5px 5px;border-radius:4px;color:#3A3A46}
+  footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);font-size:11.5px;color:var(--ink3);line-height:1.8}
+  @media (max-width:760px){.wrap{padding:40px 16px 66px}h1{font-size:30px}.cards{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">纳兰铮 · 同一句台词 · 三只候选</div>
+  <h1>她不该是甜的<br><em>该是“怕你？”那股劲</em></h1>
+  <p class="lede">你的判断是对的：偶像版太软，撑不住纳兰铮的嘴硬。下面是三只更硬的声音，念同一句台词，只换音色不换文本。</p>
+
+  <div class="quote">
+    <b>台词</b>
+    怕你？我只是在数一数这龙袍上的金线，够不够赔我当年卷走的银子。
+  </div>
+
+  <div class="cards">
+    <div class="card pick">
+      <div class="tag">原推荐 · 已给凌云裳</div>
+      <h2>冷面铁捕</h2>
+      <div class="id">voc_4fcdc882gyps · speed 0.95</div>
+      <audio controls preload="metadata" src="audio/roles/nalan-tiebu.mp3"></audio>
+      <p>中低音扎实，语速利落，带不容置疑的权威感。这句“怕你？”说出来是有底气的，不是撒娇。</p>
+      <div class="chips">
+        <span class="chip good">最贴嘴硬</span>
+        <span class="chip">中低</span>
+        <span class="chip">古风</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="tag">备选 · 更宫廷</div>
+      <h2>青史执笔人</h2>
+      <div class="id">voc_3nw7zw44cxek · speed 1.0</div>
+      <audio controls preload="metadata" src="audio/roles/nalan-qingshi.mp3"></audio>
+      <p>清冷、咬字锋利，带“洞悉宫廷暗流”的审视感。更像落难郡主在翻旧账，但年龄感偏大、偏旁白。</p>
+      <div class="chips">
+        <span class="chip blue">最像郡主</span>
+        <span class="chip">清冷</span>
+        <span class="chip warn">偏旁白</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="tag">备选 · 甜里带刺</div>
+      <h2>幽兰影</h2>
+      <div class="id">voc_dcccp6b9p466 · speed 1.0</div>
+      <audio controls preload="metadata" src="audio/roles/nalan-youlan.mp3"></audio>
+      <p>清甜柔软，但能在撒娇与冷静压迫之间切换。适合“哟，今日嘴甜”那种带笑的刻薄，但整体偏宠妃。</p>
+      <div class="chips">
+        <span class="chip">甜里带刺</span>
+        <span class="chip">可压迫</span>
+        <span class="chip warn">偏宠妃</span>
+      </div>
+    </div>
+  </div>
+
+  <table>
+    <thead><tr><th style="width:22%">音色</th><th>像纳兰铮的地方</th><th style="width:26%">风险</th></tr></thead>
+    <tbody>
+      <tr><td>冷面铁捕</td><td>“怕你？”的底气、利落、不甜</td><td>和女将军撞声；少一点郡主的贵气</td></tr>
+      <tr><td>青史执笔人</td><td>旧日宫廷、翻旧账的冷</td><td>年龄感偏大，像旁白不像在对戏</td></tr>
+      <tr><td>幽兰影</td><td>“哟，今日嘴甜”的笑里藏刀</td><td>太宠妃，容易变成调情</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <div class="t">我的建议</div>
+    <p>纳兰铮用 <strong>冷面铁捕 0.95</strong>，先把“嘴硬”立住；女将军改成 <strong>荒漠女领航</strong> <code>voc_jvutj6uph9d9</code>，更“久经沙场”，也避免两个角色同声。青史执笔人留作“更宫廷”的备选。</p>
+  </div>
+
+  <div class="callout warn">
+    <div class="t">最终调整</div>
+    <p>凌云裳确定用「冷面铁捕 0.95」，纳兰铮改用「青史执笔人」——更冷、更宫廷，也不再和凌云裳撞声。大肥鱼偶像版与机灵版都空出来了，可以留给公主 / 甜妹 / 活泼角色。</p>
+  </div>
+
+  <footer>
+    <p>三只音色均为真实调用 BreezeBlue 生成，台词相同。文件在 <code>docs/audio/roles/nalan-*.mp3</code>。</p>
+    <p>冷面铁捕为官方公开音色；青史执笔人、幽兰影也来自官方中文女声库。</p>
+  </footer>
+
+</div>
+</body>
+</html>

@@ -1,10 +1,14 @@
 import SwiftUI
 
-/// 高光时刻 · 全部智能体
+/// 高光时刻 · 全部角色
 struct AgentsView: View {
     @Environment(AppStore.self) private var store
     @Environment(AppRouter.self) private var router
     @Environment(\.dismiss) private var dismiss
+
+    @State private var loreAgent: MyAgent?
+    @State private var publishNote = ""
+    @State private var publishing = false
 
     private let columns = [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)]
 
@@ -33,7 +37,7 @@ struct AgentsView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
                     HStack(alignment: .firstTextBaseline, spacing: 8) {
-                        Text("全部智能体")
+                        Text("全部角色")
                             .font(Typo.display(19))
                             .tracking(1.2)
                             .foregroundStyle(Palette.ink)
@@ -51,7 +55,7 @@ struct AgentsView: View {
                             Image(systemName: "sparkles")
                                 .font(.system(size: 28, weight: .light))
                                 .foregroundStyle(Palette.gold.opacity(0.6))
-                            Text("还没有创建过智能体")
+                            Text("还没有创建过角色")
                                 .font(Typo.body(13.5))
                                 .foregroundStyle(Palette.ink3)
                             Button {
@@ -74,7 +78,20 @@ struct AgentsView: View {
                             ForEach(store.myAgents) { agent in
                                 AgentCardView(agent: agent, imageHeight: 160) {
                                     let character = store.chatCharacter(for: agent)
+                                    guard AuthGate.shared.require() else { return }
                                     router.push(.chat(character.id))
+                                }
+                                .contextMenu {
+                                    Button {
+                                        loreAgent = agent
+                                    } label: {
+                                        Label("世界设定", systemImage: "book.closed")
+                                    }
+                                    Button {
+                                        Task { await publish(agent) }
+                                    } label: {
+                                        Label("发布到首页推荐", systemImage: "paperplane")
+                                    }
                                 }
                             }
                         }
@@ -89,5 +106,34 @@ struct AgentsView: View {
         .background(Palette.canvas)
         .navigationBarBackButtonHidden()
         .toolbar(.hidden, for: .navigationBar)
+        .sheet(item: $loreAgent) { agent in
+            LoreEditorView(characterID: "agent-\(agent.name.trimmingCharacters(in: .whitespaces))")
+        }
+        .alert(publishNote, isPresented: Binding(
+            get: { !publishNote.isEmpty },
+            set: { if !$0 { publishNote = "" } }
+        )) {
+            Button("好") { publishNote = "" }
+        }
+    }
+
+    /// 发布到云端：发布即公开，其他用户登录后在首页推荐里能看到
+    private func publish(_ agent: MyAgent) async {
+        guard !publishing else { return }
+        publishing = true
+        defer { publishing = false }
+        do {
+            try await CloudAgents.publish(
+                name: agent.name,
+                tagline: agent.summary,
+                persona: agent.setting,
+                opening: "",
+                voice: agent.voiceName
+            )
+            await store.refreshCloudAgents()
+            publishNote = "已发布。别人登录后，首页推荐里就能刷到「\(agent.name)」"
+        } catch {
+            publishNote = "发布失败：\(error.localizedDescription)"
+        }
     }
 }

@@ -16,6 +16,8 @@ final class ChatModel {
     var input: String = ""
     var showLevelUp = false
     var lastError: String?
+    /// 当前是否在通话中：决定回复走「电话口吻」还是「文字聊天口吻」
+    var replyContext: ReplyContext = .chat
     /// 回合成功结束的钩子（语音通话页用来拿最终回复做朗读）；参数 = AI 最终回复全文
     var onReplyFinished: ((String) -> Void)?
 
@@ -120,6 +122,7 @@ final class ChatModel {
     }
 
     private func startStream(replyingTo text: String) {
+        ChatMemoryStore.shared.markFirstSeen(characterID: character.id)
         isStreaming = true
         isWaitingFirstToken = true
         let history = Array(messages.suffix(Self.historyWindow))
@@ -129,7 +132,8 @@ final class ChatModel {
             history: history,
             userText: text,
             level: intimacy.level,
-            memory: ChatMemoryStore.shared.turns(for: character.id)
+            memory: ChatMemoryStore.shared.turns(for: character.id),
+            context: replyContext
         )
 
         streamTask = Task { [weak self] in
@@ -174,6 +178,12 @@ final class ChatModel {
             recordTurn()
             persist()
             recordMemory()
+            // 抽取记忆：先规则筛候选，再让模型改写成「用户……」的条目。
+            // 异步执行，不阻塞回复；模型不可用会自动退回规则结果。
+            if let text = lastUserText {
+                let id = character.id
+                Task { await MemoryDescriber.extract(from: text, characterID: id) }
+            }
             let reply = messages.last(where: { $0.role == .assistant && !$0.failed })?.text
             if let reply, !reply.isEmpty {
                 onReplyFinished?(reply)

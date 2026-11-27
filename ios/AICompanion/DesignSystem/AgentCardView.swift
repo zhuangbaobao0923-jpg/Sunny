@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// 智能体卡片（我的页网格 / 高光时刻全部页共用）
+/// 角色卡片（我的页网格 / 高光时刻全部页共用）
 struct AgentCardView: View {
     let agent: MyAgent
     var imageHeight: CGFloat = 132

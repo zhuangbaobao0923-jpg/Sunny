@@ -10,7 +10,7 @@ struct RecView: View {
     @State private var expandedBio = false
     @State private var typingText = ""
     @State private var dragOffset: CGFloat = 0
-    /// 本次进入时洗好的推荐池（含用户创建的智能体）
+    /// 本次进入时洗好的推荐池（含用户创建的角色）
     @State private var feed: [Character] = []
 
     private var character: Character {
@@ -58,7 +58,7 @@ struct RecView: View {
             try? await Task.sleep(for: .milliseconds(900))
             withAnimation(.easeOut(duration: 0.35)) { isLoading = false }
         }
-        // 每次进入推荐页都重新洗牌：官方角色 + 用户创建的智能体一起推送
+        // 每次进入推荐页都重新洗牌：官方角色 + 用户创建的角色一起推送
         .onAppear {
             feed = store.recommendationFeed()
             index = 0
@@ -140,7 +140,8 @@ struct RecView: View {
 
             Button {
                 store.markRead(character.id)
-                router.push(.chat(character.id))
+                guard AuthGate.shared.require() else { return }
+                                    router.push(.chat(character.id))
             } label: {
                 Text("开始聊天")
                     .foregroundStyle(.white)

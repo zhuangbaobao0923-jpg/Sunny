@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>六类女角色：BreezeBlue 中文女声候选</title>
+<style>
+  :root{
+    --paper:#F8F7F3; --card:#FFFFFF; --ink:#17171C; --ink2:#52525E; --ink3:#8B8B96;
+    --line:#E4E1D8; --line2:#D0CCBF;
+    --indigo:#2E3A6B; --indigo-soft:#EDEFF7;
+    --amber:#9A6A12; --amber-soft:#FBF2DF;
+    --green:#2C6B52; --green-soft:#E8F2EC;
+    --red:#9B3B34; --red-soft:#F8E9E7;
+    --serif:"Songti SC","STSong","SimSun",Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Arial,sans-serif;
+    --mono:"SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.75;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px;margin:0 auto;padding:64px 30px 100px}
+  .kicker{font-size:11px;letter-spacing:.2em;color:var(--amber);text-transform:uppercase;margin-bottom:18px}
+  h1{font-family:var(--serif);font-size:40px;line-height:1.28;font-weight:600;margin-bottom:14px}
+  h1 em{font-style:normal;color:var(--indigo)}
+  .lede{font-size:15.5px;color:var(--ink2);max-width:700px;line-height:1.85}
+  .meta{margin-top:24px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--ink3);display:flex;gap:22px;flex-wrap:wrap}
+  .toc{margin-top:28px;display:flex;flex-wrap:wrap;gap:8px}
+  .toc a{font-size:12px;color:var(--ink2);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:6px 12px;background:var(--card)}
+  .toc a:hover{color:var(--indigo);border-color:#B9BED6}
+
+  section{margin-top:62px}
+  .role-head{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+  .role-head .idx{font-family:var(--serif);font-size:12px;color:var(--amber);letter-spacing:.1em}
+  h2{font-family:var(--serif);font-size:26px;font-weight:600}
+  .want{font-size:13.5px;color:var(--ink2);max-width:780px;margin-bottom:18px;padding-left:34px;line-height:1.8}
+  .want b{color:var(--ink);font-weight:600}
+
+  .voices{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .voice{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+  .voice.pick{border-color:#B9BED6;box-shadow:0 0 0 3px rgba(46,58,107,.05)}
+  .voice .tagline{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:5px}
+  .voice h3{font-family:var(--serif);font-size:21px;font-weight:600;margin-bottom:3px}
+  .voice .id{font-family:var(--mono);font-size:11px;color:var(--ink3);margin-bottom:10px;word-break:break-all}
+  audio{width:100%;height:38px;margin:4px 0 10px}
+  .voice .desc{font-size:13px;color:var(--ink2);line-height:1.7;min-height:64px}
+  .why{font-size:12.5px;color:var(--ink);background:#FBFAF7;border-top:1px solid var(--line);margin-top:12px;padding-top:10px;line-height:1.7}
+  .why b{color:var(--indigo);font-weight:600}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+  .chip{font-size:10.5px;padding:3px 8px;border-radius:999px;background:#F1EFE8;color:#5F5E5A}
+  .chip.good{background:var(--green-soft);color:var(--green)}
+  .chip.warn{background:var(--amber-soft);color:var(--amber)}
+  .chip.bad{background:var(--red-soft);color:var(--red)}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;margin:14px 0;background:var(--card)}
+  thead th{text-align:left;font-weight:500;font-size:10.5px;letter-spacing:.08em;color:var(--ink3);padding:10px 12px;border-bottom:1px solid var(--line2);text-transform:uppercase;background:#FBFAF7}
+  tbody td{padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink2);line-height:1.65}
+  tbody td:first-child{color:var(--ink);font-weight:500}
+  tbody tr:last-child td{border-bottom:none}
+
+  .callout{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--indigo);border-radius:10px;padding:16px 18px;margin:18px 0}
+  .callout.warn{border-left-color:var(--amber);background:var(--amber-soft)}
+  .callout .t{font-weight:600;font-size:13px;margin-bottom:4px;color:var(--ink)}
+  .callout p{font-size:13px;margin:3px 0;color:var(--ink2)}
+  code{font-family:var(--mono);font-size:12px;background:#EFEDE6;padding:1.5px 5px;border-radius:4px;color:#3A3A46}
+  footer{margin-top:70px;padding-top:20px;border-top:1px solid var(--line);font-size:11.5px;color:var(--ink3);line-height:1.8}
+
+  @media (max-width:780px){
+    .wrap{padding:44px 18px 70px}
+    h1{font-size:30px}
+    .voices{grid-template-columns:1fr}
+    .want{padding-left:0}
+    table{font-size:12px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">角色选声 · 中文女声 12 只</div>
+  <h1>六类女角色<br><em>各挑两只，听气质不看名字</em></h1>
+  <p class="lede">从 BreezeBlue 官方 254 只中文女声里筛出，全部标准普通话（accent 为空）。每类两只：一只更贴，一只做反差。试听是官方样音，不是夜谈台词。</p>
+  <div class="meta">
+    <span>12 只 · 6 类</span>
+    <span>样音 8–16 秒</span>
+    <span>全部 accent=null</span>
+  </div>
+
+  <nav class="toc">
+    <a href="#general">女将军</a>
+    <a href="#empress">皇后</a>
+    <a href="#consort">宠妃</a>
+    <a href="#princess">公主 / 郡主</a>
+    <a href="#sovereign">女帝</a>
+    <a href="#sister">邻家妹妹</a>
+    <a href="#summary">总表</a>
+  </nav>
+
+  <section id="general">
+    <div class="role-head"><span class="idx">01</span><h2>女将军</h2></div>
+    <p class="want"><b>你要的：</b>胸腔共鸣扎实，清亮不甜腻，咬字干脆利落，有金属质感，尾音短而有力，带爽朗果决的侠气。</p>
+    <div class="voices">
+      <div class="voice pick">
+        <div class="tagline">首选 · 古风武侠</div>
+        <h3>冷面铁捕</h3>
+        <div class="id">voc_4fcdc882gyps · young · authoritative / precise</div>
+        <audio controls preload="metadata" src="audio/roles/general-iron.mp3"></audio>
+        <div class="desc">中低音区扎实有力，语速利落且带不容置疑的权威感，严厉中偶尔流露一丝隐秘的柔情。</div>
+        <div class="why"><b>为什么是它：</b>官方直接写明“专为古风互动剧情、武侠广播剧设计”，是 12 只里唯一一只把“中低 + 利落 + 权威”同时占全的。</div>
+        <div class="chips"><span class="chip good">最贴</span><span class="chip">中低</span><span class="chip">古风</span></div>
+      </div>
+
+      <div class="voice">
+        <div class="tagline">备选 · 久经沙场</div>
+        <h3>荒漠女领航</h3>
+        <div class="id">voc_jvutj6uph9d9 · middle_aged · authoritative / steady</div>
+        <audio controls preload="metadata" src="audio/roles/general-wasteland.mp3"></audio>
+        <div class="desc">浑厚低音，宽阔的口腔空间感，嗓音里有风沙磨砺后的干燥与坚韧，适合硬核女性角色与动作场景。</div>
+        <div class="why"><b>为什么是它：</b>比冷面铁捕更成熟、更“打过仗”，没有闺阁气。适合设定为三十岁以上、带旧伤的主帅。</div>
+        <div class="chips"><span class="chip">低音厚</span><span class="chip">风沙感</span><span class="chip warn">年龄偏大</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="empress">
+    <div class="role-head"><span class="idx">02</span><h2>皇后</h2></div>
+    <p class="want"><b>你要的：</b>声线饱满醇厚，温润如玉，气息平稳绵长，语速不急不徐，自带母仪天下的威严与包容，情绪起伏克制。</p>
+    <div class="voices">
+      <div class="voice pick">
+        <div class="tagline">首选 · 温润持重</div>
+        <h3>雅致述评人</h3>
+        <div class="id">voc_ynfyjw6yrv7p · middle_aged · warm / refined / calm</div>
+        <audio controls preload="metadata" src="audio/roles/empress-jade.mp3"></audio>
+        <div class="desc">音色温润如玉，语速平缓且用词考究，在冷静的叙述里偶尔穿插一点灵动的俏皮。</div>
+        <div class="why"><b>为什么是它：</b>“温润 + 平缓 + 克制”这三样最贴皇后的日常对话；年龄是中年，不是老年，压得住六宫又不显老。</div>
+        <div class="chips"><span class="chip good">日常首选</span><span class="chip">温润</span><span class="chip">克制</span></div>
+      </div>
+
+      <div class="voice">
+        <div class="tagline">备选 · 训诫场面</div>
+        <h3>雅韵谈锋</h3>
+        <div class="id">voc_rye44d226x46 · old · refined / calm / measured</div>
+        <audio controls preload="metadata" src="audio/roles/empress-regal.mp3"></audio>
+        <div class="desc">音色优雅徐缓，措辞考究且充满分量感，展现历经阅历后的平静与威严。</div>
+        <div class="why"><b>为什么是它：</b>适合“皇后训人 / 母仪天下”的重场面；但 age=old，日常会偏太后感，不建议全程用。</div>
+        <div class="chips"><span class="chip">威严</span><span class="chip">分量感</span><span class="chip bad">偏太后</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="consort">
+    <div class="role-head"><span class="idx">03</span><h2>宠妃</h2></div>
+    <p class="want"><b>你要的：</b>气声与鼻音偏多，声音软糯缠绵，尾音轻上扬或气音拖腔，咬字娇嗔灵动，有情绪拉扯与撒娇意味。</p>
+    <div class="voices">
+      <div class="voice pick">
+        <div class="tagline">首选 · 能撒娇也能翻脸</div>
+        <h3>幽兰影</h3>
+        <div class="id">voc_dcccp6b9p466 · young · gentle / authoritative / passionate</div>
+        <audio controls preload="metadata" src="audio/roles/consort-silk.mp3"></audio>
+        <div class="desc">声线清甜柔软，在温柔撒娇与冷静压迫之间自如切换，适合性格复杂的女性角色。</div>
+        <div class="why"><b>为什么是它：</b>宠妃不能只会甜。它的“甜 → 冷”切换正好演“撒娇时软、翻脸时狠”，是 12 只里情绪跨度最大的。</div>
+        <div class="chips"><span class="chip good">双面</span><span class="chip">甜软</span><span class="chip">可压迫</span></div>
+      </div>
+
+      <div class="voice">
+        <div class="tagline">备选 · 私语感</div>
+        <h3>月夜低语者</h3>
+        <div class="id">voc_f3zbgr88pz5m · middle_aged · calm / gentle</div>
+        <audio controls preload="metadata" src="audio/roles/consort-whisper.mp3"></audio>
+        <div class="desc">极具包容力的低哑女声，带明显贴耳气声，语气温柔如叹息，适合深夜情感与助眠内容。</div>
+        <div class="why"><b>为什么是它：</b>气声最足，适合“枕边私语”的场面；但它不“俏”，缺花旦的灵动，只能演宠妃的夜，不太能演白天。</div>
+        <div class="chips"><span class="chip">气声</span><span class="chip">低哑</span><span class="chip bad">缺花旦俏</span></div>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <div class="t">这一类有真实缺口</div>
+      <p>官方中文女声库里没有真正的“花旦 / 戏腔 / 妩媚”标签，254 只里一只都没有。上面两只是“气声 + 甜软”的最近解，不是量身定做。如果你要的是《甄嬛传》那种一开口就带戏腔的宠妃，建议走 Voice Design，用描述生成，而不是继续在现成库里翻。</p>
+    </div>
+  </section>
+
+  <section id="princess">
+    <div class="role-head"><span class="idx">04</span><h2>公主 / 郡主</h2></div>
+    <p class="want"><b>你要的：</b>头腔共鸣明显，音色明亮干净有弹性，语速轻快；天真受宠型偏甜美娇憨，骄纵傲娇型重音突出、语调上挑。</p>
+    <div class="voices">
+      <div class="voice pick">
+        <div class="tagline">首选 · 天真受宠</div>
+        <h3>灵动汐语</h3>
+        <div class="id">voc_tzneby749yja · young · gentle / energetic</div>
+        <audio controls preload="metadata" src="audio/roles/princess-bright.mp3"></audio>
+        <div class="desc">声音甜润且充满活力，语速轻快，句尾常带上扬的喜悦感，适合活泼可爱的角色。</div>
+        <div class="why"><b>为什么是它：</b>“甜 + 上扬 + 轻快”三样都对，是标准的受宠公主底色；配娇憨台词不用额外演。</div>
+        <div class="chips"><span class="chip good">甜美</span><span class="chip">上扬</span><span class="chip">轻快</span></div>
+      </div>
+
+      <div class="voice">
+        <div class="tagline">备选 · 骄纵郡主</div>
+        <h3>傲气学姐</h3>
+        <div class="id">voc_kwje43kewnst · young · precise / bright / articulate</div>
+        <audio controls preload="metadata" src="audio/roles/princess-proud.mp3"></audio>
+        <div class="desc">声音明亮、咬字清晰，语速轻快中透着自信与挑衅，适合校园竞争感或骄傲的角色。</div>
+        <div class="why"><b>为什么是它：</b>重音清楚、语调上挑，正好演“我就不”的郡主；比灵动汐语硬一度，不会甜到发腻。</div>
+        <div class="chips"><span class="chip">傲</span><span class="chip">挑衅感</span><span class="chip">重音清楚</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="sovereign">
+    <div class="role-head"><span class="idx">05</span><h2>女帝</h2></div>
+    <p class="want"><b>你要的：</b>低沉磁性的胸腔音，气场极强，有压迫感与疏离感，字字千钧，极少出现情绪波动，自带掌控全局的帝王心术。</p>
+    <div class="voices">
+      <div class="voice pick">
+        <div class="tagline">首选 · 不动声色</div>
+        <h3>冷峻调查官</h3>
+        <div class="id">voc_4xhyh9d63huc · middle_aged · steady / measured</div>
+        <audio controls preload="metadata" src="audio/roles/sovereign-cold.mp3"></audio>
+        <div class="desc">声线轻而有力，呼吸控制极佳，通过微妙停顿与尾音下沉营造压迫感，适合硬核叙事。</div>
+        <div class="why"><b>为什么是它：</b>女帝的可怕不在音量，在停顿。它的“尾音下沉 + 停顿”就是那种“不必大声，你也会跪”的压迫。</div>
+        <div class="chips"><span class="chip good">压迫感</span><span class="chip">停顿</span><span class="chip">克制</span></div>
+      </div>
+
+      <div class="voice">
+        <div class="tagline">备选 · 冷冽锋利</div>
+        <h3>寒蝉低语</h3>
+        <div class="id">voc_rt79c6axqxrc · middle_aged · calm / rhythmic / passionate</div>
+        <audio controls preload="metadata" src="audio/roles/sovereign-blade.mp3"></audio>
+        <div class="desc">质地清冷、节奏感强，吐字锋利而尾音干净，在极度镇定中透出令人屏息的压迫感。</div>
+        <div class="why"><b>为什么是它：</b>比冷峻调查官更“冷”、更薄，适合年轻女帝或杀伐果断的摄政长公主；古装感需要 instructions 往“朝堂”拉。</div>
+        <div class="chips"><span class="chip">冷冽</span><span class="chip">锋利</span><span class="chip warn">偏现代悬疑</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="sister">
+    <div class="role-head"><span class="idx">06</span><h2>邻家妹妹</h2></div>
+    <p class="want"><b>你要的：</b>声音自然质朴、无攻击性，音色清澈柔和像未经雕琢的溪水；语气真诚温暖，略带羞涩，听起来极具亲和力。</p>
+    <div class="voices">
+      <div class="voice pick">
+        <div class="tagline">首选 · 生活化</div>
+        <h3>邻家暖心</h3>
+        <div class="id">voc_p36dbdewwvae · young · warm / gentle / friendly</div>
+        <audio controls preload="metadata" src="audio/roles/sister-warm.mp3"></audio>
+        <div class="desc">亲切自然的女性嗓音，语气松弛且富有生活气息，适合日常 Vlog 与温情播客。</div>
+        <div class="why"><b>为什么是它：</b>名字、描述、tone 三样都写着“邻家”。没有播音腔，也没有刻意甜，像真的在跟你说话。</div>
+        <div class="chips"><span class="chip good">最贴</span><span class="chip">自然</span><span class="chip">无攻击</span></div>
+      </div>
+
+      <div class="voice">
+        <div class="tagline">备选 · 温柔姐姐</div>
+        <h3>幽谷医者</h3>
+        <div class="id">voc_qeqmd4f7e5mh · young · warm / gentle / authoritative</div>
+        <audio controls preload="metadata" src="audio/roles/sister-soft.mp3"></audio>
+        <div class="desc">柔和的女性低音，语速平稳且富有层次，温婉中带着医者的坚定。</div>
+        <div class="why"><b>为什么是它：</b>比邻家暖心低半度、稳一点，适合“会照顾人”的姐姐型邻家，不是蹦蹦跳跳的妹妹。</div>
+        <div class="chips"><span class="chip">温柔</span><span class="chip">低半度</span><span class="chip">姐姐感</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="summary">
+    <h2 style="margin-bottom:10px">一页总表</h2>
+    <table>
+      <thead><tr><th style="width:18%">角色</th><th style="width:26%">首选</th><th style="width:26%">备选</th><th>缺口 / 备注</th></tr></thead>
+      <tbody>
+        <tr><td>女将军</td><td>冷面铁捕</td><td>荒漠女领航</td><td>古风武侠现成，这两只可直接用</td></tr>
+        <tr><td>皇后</td><td>雅致述评人</td><td>雅韵谈锋</td><td>雅韵偏太后；30+ 皇后用雅致，训诫场面再切</td></tr>
+        <tr><td>宠妃</td><td>幽兰影</td><td>月夜低语者</td><td><b>缺真花旦/戏腔</b>，要那种味道得 Voice Design</td></tr>
+        <tr><td>公主 / 郡主</td><td>灵动汐语（甜）</td><td>傲气学姐（傲）</td><td>两只可覆盖“受宠”和“骄纵”两态</td></tr>
+        <tr><td>女帝</td><td>冷峻调查官</td><td>寒蝉低语</td><td>偏现代悬疑，古装朝堂感需 instructions 拉</td></tr>
+        <tr><td>邻家妹妹</td><td>邻家暖心</td><td>幽谷医者</td><td>一只妹妹、一只姐姐，按角色年龄选</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <div class="t">为什么只给两只，不给十只</div>
+      <p>同一类给太多，最后一定靠名字选，不是靠耳朵。两只刚好形成反差：一只更贴，一只更偏。听完选一只，另一只留作备用，比堆十只更有效。</p>
+    </div>
+
+    <div class="callout warn">
+      <div class="t">官方库的真实分布</div>
+      <p>254 只中文女声里，标准普通话 159 只；现代旁白、治愈、客服、少女类占大多数，古风/宫廷/花旦类极少。所以“女将军、皇后、女帝”是气质接近，不是为古装定制；“宠妃”缺口最大。要 100% 贴，走 Voice Design，用你表里的描述直接生成。</p>
+    </div>
+  </section>
+
+  <footer>
+    <p>音色来源：BreezeBlue 官方音色库，通过 <code>GET /v1/voices?language_code=zh&amp;gender=female&amp;voice_type=default</code> 全量拉取 254 只后筛选；试听为官方 <code>preview_url</code>，已下载至 <code>docs/audio/roles/</code>。所有候选 <code>accent=null</code>，即标准普通话。</p>
+    <p>本页只做选声，不涉及 App 接入；选定后换 ID 即可，不需要重新生成。</p>
+  </footer>
+
+</div>
+</body>
+</html>

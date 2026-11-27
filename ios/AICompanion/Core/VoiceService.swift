@@ -15,8 +15,11 @@ enum CallAudioSession {
     static func activate() {
         isActive = true
         let session = AVAudioSession.sharedInstance()
+        // allowBluetooth：AirPods / 蓝牙耳机的通话通道（HFP）
+        // allowBluetoothA2DP：只有 A2DP 的蓝牙音箱也能出声，否则这类设备在
+        // playAndRecord 下根本没有可用输出，听起来就是「连了蓝牙没声音」
         try? session.setCategory(.playAndRecord, mode: .voiceChat,
-                                 options: [.allowBluetooth, .defaultToSpeaker])
+                                 options: [.allowBluetooth, .allowBluetoothA2DP, .defaultToSpeaker])
         try? session.setActive(true)
     }
 
@@ -54,6 +57,9 @@ final class VoiceService: NSObject, ObservableObject, AVSpeechSynthesizerDelegat
     /// 最近一次合成失败原因（UI 可提示，不影响播放）
     @Published private(set) var lastError: String?
 
+    /// 最近一次 Breeze 失败原因。兜底会清掉 lastError，这里单独留一份，便于设置页定位。
+    @Published private(set) var lastBreezeError: String?
+
     /// 正在合成音频（还没出声）——UI 据此显示「合成中…」，让等待可见
     @Published private(set) var isPreparing: Bool = false
 
@@ -63,6 +69,9 @@ final class VoiceService: NSObject, ObservableObject, AVSpeechSynthesizerDelegat
     /// 本地服务是否可达（设置页展示）
     @Published private(set) var isLocalServerUp: Bool = false
 
+    /// 每句的播放语速微调（通话里用一个很小的随机值，避免每句都一模一样像播报）
+    var lineRateScale: Float = 1
+
     private let synthesizer = AVSpeechSynthesizer()
     private let pitchedPlayer = PitchedAudioPlayer()
     private var voiceCache: [String: AVSpeechSynthesisVoice] = [:]
@@ -70,6 +79,22 @@ final class VoiceService: NSObject, ObservableObject, AVSpeechSynthesizerDelegat
     private var synthTask: Task<Void, Never>?
     /// 最近一次 speak() 的原文（用于气泡按钮高亮匹配）
     private var rawSpokenText: String?
+
+    // ---- 预合成缓存 ----
+    // 通话里一句接一句地念，如果每句都等云端合成（0.5~1.5s），
+    // 句间的停顿就会又长又死板。这里在念上一句的时候就把下一句合成好。
+    private struct CachedAudio {
+        let url: URL
+        let applyPitch: Bool
+        let rate: Float?
+    }
+    private var audioCache: [String: CachedAudio] = [:]
+    private var prefetchTasks: [String: Task<Void, Never>] = [:]
+
+    // Breeze 流式播放
+    private var breezeStream: BreezeStreamingRequest?
+    private var breezePlayer: BreezeStreamPlayer?
+    private var breezeToken: UUID?
 
     private override init() {
         super.init()
@@ -115,8 +140,10 @@ final class VoiceService: NSObject, ObservableObject, AVSpeechSynthesizerDelegat
     }
 
     /// 朗读一段角色台词。动作描写（括号内）不会读出来。
-    /// 引擎优先级：Mac 本地服务（14 音色最全）→ 云端（蜂窝可用）→ 设备内置（离线兜底）。
-    func speak(_ rawText: String, for character: Character) {
+    /// - Parameter allowBreeze: 仅“点语音条”这类用户主动播放为 true；自动朗读传 false，
+    ///   避免每条回复都调用付费云端 TTS。
+    /// 引擎优先级：聊天语音条 BreezeBlue → Mac 本地服务 → 云端（蜂窝可用）→ 设备内置（离线兜底）。
+    func speak(_ rawText: String, for character: Character, allowBreeze: Bool = true) {
         stop()
         let text = Self.spokenPart(of: rawText)
         guard !text.isEmpty else {
@@ -130,6 +157,23 @@ final class VoiceService: NSObject, ObservableObject, AVSpeechSynthesizerDelegat
         rawSpokenText = rawText
         speakingText = rawText
         isPreparing = true
+        // 聊天语音条与通话都优先走 Breeze：角色有专属音色、Key 已配。
+        // 失败会自动回退本地/Azure/腾讯/系统，不会让通话哑掉。
+        if allowBreeze,
+           BreezeVoiceSettings.shared.isConfigured,
+           let entry = BreezeVoiceCast.entry(for: character) {
+            speakWithBreeze(text, character: character, entry: entry)
+            return
+        }
+        // 命中预合成 → 直接播，省掉这一句的合成空档
+        let key = cacheKey(text: text, character: character)
+        if let cached = audioCache[key] {
+            audioCache.removeValue(forKey: key)   // 用完即弃：临时文件可能被系统清理
+            speakingID = character.id
+            play(url: cached.url, text: text, character: character,
+                 applyPitch: cached.applyPitch, rate: cached.rate)
+            return
+        }
         // 服务已知不可达时直接走云端，不再让用户干等网络超时
         guard isLocalServerUp else {
             startCloud(text, character: character)
@@ -139,12 +183,170 @@ final class VoiceService: NSObject, ObservableObject, AVSpeechSynthesizerDelegat
         speakWithLocalEngine(text, character: character)
     }
 
+    /// 预合成下一句：只写缓存，不动 speakingID / isPreparing，不会打断正在播的句子。
+    /// 通话的碎碎念就是靠这个把「等合成」的空档抹掉的。
+    func prepare(_ rawText: String, for character: Character) {
+        let text = Self.spokenPart(of: rawText)
+        guard !text.isEmpty else { return }
+        // Breeze 走流式，旧引擎的预合成用不上，别白跑
+        if BreezeVoiceSettings.shared.isConfigured,
+           BreezeVoiceCast.entry(for: character) != nil {
+            return
+        }
+        let key = cacheKey(text: text, character: character)
+        guard audioCache[key] == nil, prefetchTasks[key] == nil else { return }
+        let kind = character.voiceKind
+        let engine = engineTag()
+
+        prefetchTasks[key] = Task { [weak self] in
+            guard let self else { return }
+            defer { self.prefetchTasks[key] = nil }
+            do {
+                let entry: CachedAudio
+                switch engine {
+                case "local":
+                    let url = try await LocalTTSAudioCache.shared.audioURL(
+                        text: text, voice: kind.edgeVoice, rate: kind.edgeRate,
+                        pitch: kind.edgePitch, client: VoiceSettings.shared.client
+                    )
+                    entry = CachedAudio(url: url, applyPitch: true, rate: 1.0)
+                case "azure":
+                    let url = try await AzureTTSClient.synthesize(text: text, kind: kind)
+                    entry = CachedAudio(url: url, applyPitch: false, rate: nil)
+                default:
+                    let url = try await TencentTTSClient.synthesize(text: text, kind: kind)
+                    entry = CachedAudio(url: url, applyPitch: true, rate: nil)
+                }
+                if self.audioCache.count > 60 { self.audioCache.removeAll() }
+                self.audioCache[key] = entry
+            } catch {
+                // 预合成失败不打扰用户：真正播到这一句时会再合成一次
+            }
+        }
+    }
+
+    private func engineTag() -> String {
+        if isLocalServerUp { return "local" }
+        if AzureVoiceSettings.shared.isConfigured { return "azure" }
+        return "tencent"
+    }
+
+    private func cacheKey(text: String, character: Character) -> String {
+        "\(engineTag())|\(character.voiceKind.rawValue)|\(text)"
+    }
+
     /// 云端链路：Azure 神经音色（用户选定的云扬等）优先，未配置或无额度过腾讯云
     private func startCloud(_ text: String, character: Character) {
         if AzureVoiceSettings.shared.isConfigured {
             speakWithAzure(text, character: character)
         } else {
             speakWithCloud(text, character: character)
+        }
+    }
+
+    // MARK: - BreezeBlue 角色音色（聊天语音条）
+
+    private func speakWithBreeze(_ text: String, character: Character, entry: BreezeVoiceCast.Entry) {
+        speakingID = character.id
+        lastEngine = "BreezeBlue · \(entry.name)"
+        lastError = nil
+        lastBreezeError = nil
+
+        // 命中缓存：第二次点同一条直接播，不再请求、不再计费
+        if let cached = BreezeTTSClient.cachedAudio(text: text, entry: entry) {
+            play(url: cached, text: text, character: character, applyPitch: false, rate: 1.0)
+            return
+        }
+
+        guard let player = BreezeStreamPlayer() else {
+            fallbackFromBreeze(text: text, character: character, error: "流式播放器初始化失败")
+            return
+        }
+
+        let token = UUID()
+        breezeToken = token
+
+        do {
+            try player.start(onStart: { [weak self] in
+                guard let self, self.breezeToken == token else { return }
+                self.isPreparing = false
+            }, onFinish: { [weak self] in
+                guard let self, self.breezeToken == token else { return }
+                self.breezeStream = nil
+                self.breezePlayer = nil
+                self.breezeToken = nil
+                if self.speakingID == character.id {
+                    self.speakingID = nil
+                    self.speakingText = nil
+                }
+            })
+        } catch {
+            fallbackFromBreeze(text: text, character: character, error: error.localizedDescription)
+            return
+        }
+
+        let request: URLRequest
+        do {
+            request = try BreezeTTSClient.makeStreamRequest(text: text, entry: entry)
+        } catch {
+            player.stop()
+            fallbackFromBreeze(text: text, character: character, error: error.localizedDescription)
+            return
+        }
+
+        breezePlayer = player
+        var pcm = Data()
+
+        breezeStream = BreezeStreamingRequest(request: request, onData: { data in
+            DispatchQueue.main.async {
+                guard self.breezeToken == token else { return }
+                pcm.append(data)
+                player.append(data)
+            }
+        }, onComplete: { error in
+            DispatchQueue.main.async {
+                guard self.breezeToken == token else { return }
+                self.breezeStream = nil
+
+                if let error {
+                    self.lastBreezeError = error.localizedDescription
+                    if pcm.isEmpty {
+                        // 一个字都没出：静默回退到原有链路
+                        player.stop()
+                        self.breezePlayer = nil
+                        self.breezeToken = nil
+                        self.fallbackFromBreeze(
+                            text: text,
+                            character: character,
+                            error: error.localizedDescription
+                        )
+                    } else {
+                        // 已经出声：让已缓冲的部分播完，不再追第二条
+                        player.finish()
+                        BreezeTTSClient.saveWAV(pcm: pcm, text: text, entry: entry)
+                    }
+                } else {
+                    player.finish()
+                    BreezeTTSClient.saveWAV(pcm: pcm, text: text, entry: entry)
+                }
+            }
+        })
+    }
+
+    private func fallbackFromBreeze(text: String, character: Character, error: String) {
+        lastBreezeError = error
+        lastError = error
+        breezeStream?.cancel()
+        breezeStream = nil
+        breezePlayer?.stop()
+        breezePlayer = nil
+        breezeToken = nil
+        isPreparing = false
+
+        if isLocalServerUp {
+            speakWithLocalEngine(text, character: character)
+        } else {
+            startCloud(text, character: character)
         }
     }
 
@@ -181,6 +383,11 @@ final class VoiceService: NSObject, ObservableObject, AVSpeechSynthesizerDelegat
     func stop() {
         synthTask?.cancel()
         synthTask = nil
+        breezeToken = nil
+        breezeStream?.cancel()
+        breezeStream = nil
+        breezePlayer?.stop()
+        breezePlayer = nil
         player?.stop()
         player = nil
         pitchedPlayer.stop()
@@ -280,7 +487,9 @@ final class VoiceService: NSObject, ObservableObject, AVSpeechSynthesizerDelegat
     /// - Parameter rate: 播放倍速；nil = 按音色实测值归一（cloudRate），本地合成传 1.0
     private func play(url: URL, text: String, character: Character,
                       applyPitch: Bool = true, rate explicitRate: Float? = nil) {
-        let playbackRate = explicitRate ?? character.voiceKind.cloudRate
+        // 语速微调只改时间不改音高：每句 ±4% 的变化足够打散「播报感」
+        let baseRate = explicitRate ?? character.voiceKind.cloudRate
+        let playbackRate = min(2.0, max(0.5, baseRate * lineRateScale))
         // 需要变调的角色走 AVAudioEngine（实时降调 + 压语速），其余走原生播放
         let cents = applyPitch ? character.voiceKind.cloudPitchCents : 0
         if cents != 0 {
@@ -343,7 +552,7 @@ final class VoiceService: NSObject, ObservableObject, AVSpeechSynthesizerDelegat
         let utterance = AVSpeechUtterance(string: text)
         utterance.voice = selected
         utterance.pitchMultiplier = Self.systemPitch(for: character.voiceKind, voice: selected)
-        utterance.rate = character.voiceKind.rate
+        utterance.rate = min(1.0, max(0.4, character.voiceKind.rate * lineRateScale))
         utterance.postUtteranceDelay = 0.1
         utterance.volume = 1.0
 

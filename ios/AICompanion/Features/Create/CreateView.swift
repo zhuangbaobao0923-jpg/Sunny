@@ -7,6 +7,7 @@ struct CreateView: View {
     @State private var draft = AgentDraft()
     @State private var showVoicePicker = false
     @State private var showFaceStudio = false
+    @State private var faceCooldown = false
     @State private var didAttemptSubmit = false
     @State private var isAutoFilling = false
     /// 上一次「自动生成」实际写进表单的结果。用于判断：
@@ -26,9 +27,14 @@ struct CreateView: View {
             // ScrollView + 底部按钮用 VStack 排：按钮永远贴在屏幕底部，
             // 键盘弹出时整块上移，不会再出现「按钮浮在页面中间」的错位
             VStack(spacing: 0) {
+                // 标题栏固定在滚动区外：内容再高也不会盖住返回键
+                // （之前放在 ScrollView 里，形象卡片变高后把返回键吃掉，
+                //  点返回等于点卡片，于是又弹出形象面板）
+                header
+                    .padding(.horizontal, 18)
+
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
-                        header
                         faceCard
                         voiceSection
                         personaSection
@@ -50,8 +56,22 @@ struct CreateView: View {
                         draft.hue = hue
                         draft.saturation = saturation
                         withAnimation(Motion.smooth) { showFaceStudio = false }
+                        // 收起动画期间下面的形象卡片会露出来，紧接着的点击会误中它、
+                        // 又把面板打开（用户看到的就是「保存完一退出又回到形象页」）
+                        faceCooldown = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            faceCooldown = false
+                        }
                     },
-                    onClose: { withAnimation(Motion.smooth) { showFaceStudio = false } }
+                    onClose: {
+                        withAnimation(Motion.smooth) { showFaceStudio = false }
+                        // 关闭动效期间下面的「创建角色形象」按钮会重新露出来，
+                        // 抬手/连点很容易误触，直接又弹一次。这里加一道冷却。
+                        faceCooldown = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            faceCooldown = false
+                        }
+                    }
                 )
                 .zIndex(20)
             }
@@ -74,9 +94,13 @@ struct CreateView: View {
             }
         }
         .onDisappear { showFaceStudio = false }
+        .onChange(of: router.tab) { _, newTab in
+            // 只要离开创作页，形象层必须关闭，回来时不该自动出现
+            if newTab != .create { showFaceStudio = false }
+        }
         .sheet(isPresented: $showVoicePicker) {
             VoicePickerSheet(selection: $draft.voice)
-                .presentationDetents([.height(420)])
+                .presentationDetents([.fraction(0.86)])
                 .presentationDragIndicator(.visible)
                 .presentationBackground(Color(hex: 0x12121C))
         }
@@ -98,13 +122,13 @@ struct CreateView: View {
     private var header: some View {
         HStack {
             Button {
-                // 返回 = 先退出上层（形象工作室/键盘），再回上一页；
-                // 不再出现「点了返回却弹出形象窗」的层级错乱
-                if showFaceStudio {
-                    withAnimation(Motion.smooth) { showFaceStudio = false }
-                    return
-                }
+                // 返回只做一件事：关掉所有浮层 + 退回推荐页。
+                // 以前这里分两步（先关面板、再退页），一旦状态没清干净就会出现
+                // 「点退出又回到形象页」的错位。
                 focusedField = nil
+                showFaceStudio = false
+                faceCooldown = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { faceCooldown = false }
                 withAnimation(Motion.quick) { router.tab = .rec }
             } label: {
                 Image(systemName: "chevron.left")
@@ -115,10 +139,11 @@ struct CreateView: View {
             }
             .buttonStyle(.plain)
             .accessibilityLabel("返回")
+            .accessibilityIdentifier("create.back")
 
             Spacer()
 
-            Text("创建智能体")
+            Text("创建角色")
                 .font(Typo.body(18, weight: .semibold))
                 .tracking(1.4)
                 .foregroundStyle(Palette.ink)
@@ -155,7 +180,7 @@ struct CreateView: View {
                                    contentMode: .fit)
                             .padding(.vertical, 8)
                     }
-                    .frame(height: 300)
+                    .frame(height: 260)
                     .frame(maxWidth: .infinity)
                     .clipped()
                     .overlay(alignment: .bottomTrailing) {
@@ -193,16 +218,18 @@ struct CreateView: View {
             )
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(draft.imageName == nil ? "添加智能体形象" : "重新生成智能体形象")
+        .disabled(faceCooldown)
+        .accessibilityLabel(draft.imageName == nil ? "添加角色形象" : "重新生成角色形象")
+        .accessibilityIdentifier("create.faceCard")
     }
 
     // MARK: - 声音
 
     private var voiceSection: some View {
-        section(title: "智能体声音") {
+        section(title: "角色声音") {
             VStack(spacing: 0) {
                 settingRow(
-                    label: "智能体声音",
+                    label: "角色声音",
                     value: draft.voice ?? "添加音色",
                     required: true,
                     isFilled: draft.voice != nil
@@ -220,7 +247,7 @@ struct CreateView: View {
             .clipShape(RoundedRectangle(cornerRadius: Radius.md, style: .continuous))
 
             if didAttemptSubmit && draft.isVoiceMissing {
-                Text("请选择智能体声音")
+                Text("请选择角色声音")
                     .font(Typo.body(11.5))
                     .foregroundStyle(Palette.danger)
                     .padding(.top, 6)
@@ -263,7 +290,7 @@ struct CreateView: View {
 
     private var personaSection: some View {
         section(
-            title: "智能体人设",
+            title: "角色人设",
             action: {
                 Button {
                     focusedField = nil
@@ -299,7 +326,7 @@ struct CreateView: View {
                         ? "请填写昵称" : nil
                 ) {
                     TextField("", text: $draft.nickname,
-                              prompt: Text("给你的智能体命名").foregroundStyle(Palette.ink3))
+                              prompt: Text("给你的角色命名").foregroundStyle(Palette.ink3))
                         .textFieldStyle(.plain)
                         .font(Typo.body(14.5))
                         .foregroundStyle(Palette.ink)
@@ -339,11 +366,11 @@ struct CreateView: View {
                 }
 
                 field(
-                    title: "智能体设定",
+                    title: "角色设定",
                     hint: "（决定回复效果）",
                     required: true,
                     error: didAttemptSubmit && draft.setting.trimmingCharacters(in: .whitespaces).isEmpty
-                        ? "请填写智能体设定" : nil
+                        ? "请填写角色设定" : nil
                 ) {
                     TextEditor(text: $draft.setting)
                         .focused($focusedField, equals: .setting)
@@ -355,7 +382,7 @@ struct CreateView: View {
                         .background(inputBackground)
                         .overlay(alignment: .topLeading) {
                             if draft.setting.isEmpty {
-                                Text("此处填写智能体的语言、思维、身份、背景、经历、聊天风格、与用户（主控）的关系等，其他人无法看到")
+                                Text("此处填写角色的语言、思维、身份、背景、经历、聊天风格、与用户（主控）的关系等，其他人无法看到")
                                     .font(Typo.body(14.5))
                                     .foregroundStyle(Palette.ink3)
                                     .padding(.horizontal, 14)
@@ -382,7 +409,7 @@ struct CreateView: View {
                         .background(inputBackground)
                         .overlay(alignment: .topLeading) {
                             if draft.intro.isEmpty {
-                                Text("在此处输入你想说的话，及希望用户了解的智能体信息，如背景、身份、人设、与用户的关系等")
+                                Text("在此处输入你想说的话，及希望用户了解的角色信息，如背景、身份、人设、与用户的关系等")
                                     .font(Typo.body(14.5))
                                     .foregroundStyle(Palette.ink3)
                                     .padding(.horizontal, 14)
@@ -491,7 +518,7 @@ struct CreateView: View {
                 focusedField = nil
                 submit()
             } label: {
-                Text("创建智能体")
+                Text("创建角色")
             }
             .buttonStyle(GoldButtonStyle(enabled: draft.canSubmit))
             .padding(.horizontal, 18)
@@ -516,12 +543,20 @@ struct CreateView: View {
             store.showToast("还差：\(draft.missingFields.joined(separator: "、"))")
             return
         }
+        // 本地角色的 id 用名字拼（跨启动稳定），所以不允许重名，
+        // 否则两个同名角色的聊天记录、记忆会落到同一个文件上
+        let newName = draft.nickname.trimmingCharacters(in: .whitespaces)
+        if store.myAgents.contains(where: { $0.name.trimmingCharacters(in: .whitespaces) == newName }) {
+            store.showToast("已经有同名角色了，换个名字吧")
+            return
+        }
         let agent = store.createAgent(from: draft)
         draft = AgentDraft()
         didAttemptSubmit = false
         lastAutoFill = nil
         showFaceStudio = false
-        // 创建成功后直接进入这个新智能体的对话页（不再跳回首页推荐）
+        // 创建成功后直接进入这个新角色的对话页（不再跳回首页推荐）
+        store.showToast("已创建 · 点聊天页右上角可以给 TA 加世界设定")
         let character = store.chatCharacter(for: agent)
         router.tab = .rec
         router.recPath = [.chat(character.id)]
@@ -646,15 +681,15 @@ private struct VoicePickerSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("设置智能体声音")
+            Text("设置角色声音")
                 .font(Typo.body(17, weight: .semibold))
                 .foregroundStyle(Palette.ink)
 
             HStack(spacing: 8) {
                 filterChip("全部", value: nil)
-                filterChip("男", value: "男")
-                filterChip("女", value: "女")
-                filterChip("儿童", value: "儿童")
+                filterChip("女声", value: "女")
+                filterChip("男声", value: "男")
+                filterChip("童声", value: "儿童")
                 Spacer()
             }
 
@@ -674,16 +709,21 @@ private struct VoicePickerSheet: View {
                         } label: {
                             HStack(spacing: 12) {
                                 Button {
-                                    let p = ttsParams(for: option.name)
                                     let sample = option.gender == "儿童"
                                         ? "你好呀，我是你的小伙伴，我们做朋友吧！"
-                                        : "你好，我是你的智能体，这种声音你觉得如何？"
-                                    previewer.toggle(
-                                        text: sample,
-                                        voice: p.voice, rate: p.rate, pitch: p.pitch,
-                                        tag: option.name,
-                                        kind: VoiceKind.kind(for: option.name)
-                                    )
+                                        : "你好，我是你的角色，这种声音你觉得如何？"
+                                    if let entry = BreezeVoiceCast.byName[option.name],
+                                       BreezeVoiceSettings.shared.hasKey {
+                                        previewer.toggleBreeze(text: sample, entry: entry, tag: option.name)
+                                    } else {
+                                        let p = ttsParams(for: option.name)
+                                        previewer.toggle(
+                                            text: sample,
+                                            voice: p.voice, rate: p.rate, pitch: p.pitch,
+                                            tag: option.name,
+                                            kind: VoiceKind.kind(for: option.name)
+                                        )
+                                    }
                                 } label: {
                                     Image(systemName: previewer.isPlaying && previewer.tag == option.name ? "pause.fill" : "play.fill")
                                         .font(.system(size: 12))

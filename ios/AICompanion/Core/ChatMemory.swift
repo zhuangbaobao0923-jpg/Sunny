@@ -14,16 +14,25 @@ struct MemoryTurn: Codable, Equatable {
 final class ChatMemoryStore {
     static let shared = ChatMemoryStore()
 
-    private let key = "chat.memory.turns"
+    private var key: String { "chat.memory.turns.\(AccountScope.id)" }
+    private let legacyKey = "chat.memory.turns"
     private let maxTurnsPerCharacter = 12
     private let defaults: UserDefaults
     private var cache: [String: [MemoryTurn]]
 
     private init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
-        if let data = defaults.data(forKey: key),
+        let scopedKey = "chat.memory.turns.\(AccountScope.id)"
+        if let data = defaults.data(forKey: scopedKey),
            let decoded = try? JSONDecoder().decode([String: [MemoryTurn]].self, from: data) {
             cache = decoded
+        } else if let legacy = defaults.data(forKey: legacyKey),
+                  let decoded = try? JSONDecoder().decode([String: [MemoryTurn]].self, from: legacy) {
+            // 老数据迁移到当前账号
+            cache = decoded
+            if let data = try? JSONEncoder().encode(decoded) {
+                defaults.set(data, forKey: scopedKey)
+            }
         } else {
             cache = [:]
         }
@@ -54,6 +63,24 @@ final class ChatMemoryStore {
     func clear(characterID: String) {
         cache[characterID] = nil
         persist()
+    }
+
+    // MARK: 认识时间（给时间锚用）
+
+    private var firstSeenKey: String { "chat.firstSeen.\(AccountScope.id)" }
+
+    /// 第一次聊天时记一笔，用来算「认识第几天」
+    func markFirstSeen(characterID: String, date: Date = Date()) {
+        var map = (defaults.dictionary(forKey: firstSeenKey) as? [String: Date]) ?? [:]
+        guard map[characterID] == nil else { return }
+        // 老用户：用能查到的最早一回合兜底，别让「认识第 1 天」出现在聊了很久的人身上
+        let earliest = turns(for: characterID).first?.date ?? date
+        map[characterID] = min(earliest, date)
+        defaults.set(map, forKey: firstSeenKey)
+    }
+
+    func firstSeen(characterID: String) -> Date? {
+        (defaults.dictionary(forKey: firstSeenKey) as? [String: Date])?[characterID]
     }
 
     /// 距上一回合过去了多少小时；无记忆返回 nil（72 小时记忆窗口的判断依据）

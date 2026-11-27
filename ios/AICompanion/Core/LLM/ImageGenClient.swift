@@ -59,7 +59,7 @@ enum ImageGenClient {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(key)", forHTTPHeaderField: "Authorization")
         let body: [String: Any] = [
-            "model": "cogview-3-flash",   // 智谱免费文生图模型
+            "model": "cogview-3-flash",   // 免费；画质靠提示词里的光影和材质描述
             "prompt": prompt,
             "size": size
         ]

@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>夜谈 × SillyTavern 玩法迁移方案</title>
+<style>
+  :root{
+    --bg:#0A0A12; --bg2:#101019; --card:#15151F; --card2:#1B1B27;
+    --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.14);
+    --ink:#F4F4F8; --ink2:#A6A6BA; --ink3:#6E6E82;
+    --gold:#E8C468; --gold-d:#B8933D; --pink:#FF8FB8; --indigo:#8C8FF0;
+    --serif:"Songti SC","STSong","SimSun",serif;
+    --sans:-apple-system,"PingFang SC","Helvetica Neue",sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg); color:var(--ink); font-family:var(--sans);
+    font-size:15px; line-height:1.75; -webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(900px 500px at 12% -8%, rgba(29,26,46,.9), transparent 70%),
+                     radial-gradient(700px 400px at 105% 8%, rgba(20,32,43,.7), transparent 70%);
+    background-repeat:no-repeat;
+  }
+  .wrap{max-width:1000px;margin:0 auto;padding:72px 32px 120px}
+  .kicker{font-size:12px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-bottom:26px}
+  h1{font-family:var(--serif);font-size:44px;line-height:1.28;font-weight:600;letter-spacing:.01em;margin-bottom:22px}
+  h1 em{font-style:normal;color:var(--gold)}
+  .lede{font-size:16px;color:var(--ink2);max-width:680px;line-height:1.85}
+  .meta{margin-top:34px;padding-top:22px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink3);display:flex;gap:28px;flex-wrap:wrap}
+  .meta b{color:var(--ink2);font-weight:500}
+
+  .toc{margin-top:44px;display:flex;flex-wrap:wrap;gap:10px}
+  .toc a{font-size:12.5px;color:var(--ink2);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:7px 14px;transition:.2s}
+  .toc a:hover{color:var(--gold);border-color:rgba(232,196,104,.45)}
+
+  section{margin-top:88px}
+  .sec-head{display:flex;align-items:baseline;gap:16px;margin-bottom:14px}
+  .num{font-family:var(--serif);font-size:13px;color:var(--gold-d);letter-spacing:.12em;min-width:26px}
+  h2{font-family:var(--serif);font-size:27px;font-weight:600;letter-spacing:.01em}
+  .sec-sub{color:var(--ink2);font-size:14.5px;max-width:720px;margin-bottom:34px;padding-left:42px}
+
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px 22px}
+  .card .tag{font-size:11px;letter-spacing:.14em;color:var(--gold);margin-bottom:12px}
+  .card h3{font-size:16px;font-weight:600;margin-bottom:9px;line-height:1.5}
+  .card p{font-size:13.5px;color:var(--ink2);line-height:1.75}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:8px}
+  thead th{
+    text-align:left;font-weight:500;font-size:11.5px;letter-spacing:.1em;color:var(--ink3);
+    padding:0 14px 12px;border-bottom:1px solid var(--line2);text-transform:uppercase;
+  }
+  tbody td{padding:15px 14px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink2);line-height:1.7}
+  tbody td:first-child{color:var(--ink);font-weight:500;white-space:nowrap}
+  tbody tr:hover{background:rgba(255,255,255,.015)}
+  .rate{color:var(--gold);letter-spacing:2px;font-size:12px;white-space:nowrap}
+  .rate .off{color:#33333F}
+  .verdict{color:var(--ink);font-size:13px}
+  .yes{color:var(--gold)}
+  .no{color:var(--pink)}
+
+  .plays{display:flex;flex-direction:column;gap:16px;margin-top:10px}
+  .play{background:var(--card);border:1px solid var(--line);border-left:2px solid var(--gold);border-radius:0 14px 14px 0;padding:28px 30px}
+  .play.p1{border-left-color:var(--pink)}
+  .play.p2{border-left-color:var(--indigo)}
+  .play-top{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+  .badge{font-size:11px;letter-spacing:.12em;padding:3px 9px;border-radius:4px;background:rgba(232,196,104,.12);color:var(--gold)}
+  .p1 .badge{background:rgba(255,143,184,.12);color:var(--pink)}
+  .p2 .badge{background:rgba(140,143,240,.14);color:var(--indigo)}
+  .play h3{font-family:var(--serif);font-size:21px;font-weight:600}
+  .play .k{font-size:13px;color:var(--ink3);margin-left:auto}
+  .play dl{margin-top:16px;display:grid;grid-template-columns:74px 1fr;gap:10px 18px;font-size:13.5px}
+  .play dt{color:var(--ink3);font-size:12.5px;padding-top:1px}
+  .play dd{color:var(--ink2);line-height:1.75}
+  code{font-family:"SF Mono",Menlo,monospace;font-size:12.5px;background:rgba(255,255,255,.055);padding:1.5px 6px;border-radius:4px;color:#D9D9E8}
+
+  .note{border:1px solid var(--line);border-radius:12px;padding:20px 22px;background:var(--bg2);font-size:13.5px;color:var(--ink2);margin-top:26px}
+  .note b{color:var(--ink);font-weight:500}
+  .note.warn{border-color:rgba(255,143,184,.28)}
+  .note.warn b{color:var(--pink)}
+
+  .quote{font-family:var(--serif);font-size:19px;line-height:1.85;color:var(--ink);border-left:2px solid var(--gold-d);padding-left:22px;margin:34px 0}
+
+  .road{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:10px}
+  .road div{background:var(--card);padding:22px 20px}
+  .road .when{font-size:11.5px;letter-spacing:.1em;color:var(--gold);margin-bottom:10px}
+  .road .what{font-size:14px;font-weight:500;margin-bottom:8px}
+  .road .why{font-size:12.5px;color:var(--ink2);line-height:1.7}
+
+  .skip{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .skip div{border:1px solid var(--line);border-radius:10px;padding:16px 18px;font-size:13.5px;color:var(--ink2)}
+  .skip div b{display:block;color:var(--ink);font-weight:500;margin-bottom:4px;font-size:14px}
+  .skip div b span{color:var(--pink);font-size:12px;margin-left:6px;letter-spacing:.08em}
+
+  footer{margin-top:96px;padding-top:24px;border-top:1px solid var(--line);font-size:12px;color:var(--ink3);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+
+  @media (max-width:820px){
+    .wrap{padding:48px 20px 80px}
+    h1{font-size:32px}
+    .cards,.road,.skip{grid-template-columns:1fr}
+    .play dl{grid-template-columns:1fr;gap:4px}
+    .play dt{margin-top:8px}
+    table{font-size:12.5px}
+    thead th,tbody td{padding-left:8px;padding-right:8px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">产品分析 · 2026.11.23</div>
+  <h1>把酒馆的玩法，<br>拆成手机上的<em>三个按钮</em></h1>
+  <p class="lede">
+    SillyTavern 值得抄的不是它的插件市场，是它把一段对话拆成了六层可组装的协议。
+    夜谈不必把控制台搬到手机上——该搬的是这些协议在消费级产品里最终呈现的<strong>结果</strong>。
+  </p>
+  <div class="meta">
+    <span>分析对象　<b>ios/AICompanion（夜谈）</b></span>
+    <span>对照组　<b>SillyTavern v1.19</b></span>
+    <span>结论　<b>三个玩法 · 一个内核 · 一份不做清单</b></span>
+  </div>
+
+  <nav class="toc">
+    <a href="#judge">判断</a>
+    <a href="#layers">六层拆解</a>
+    <a href="#gap">差距矩阵</a>
+    <a href="#plays">三个玩法</a>
+    <a href="#budget">上下文预算</a>
+    <a href="#skip">不做清单</a>
+    <a href="#road">路线</a>
+  </nav>
+
+  <!-- ============ 01 ============ -->
+  <section id="judge">
+    <div class="sec-head"><span class="num">01</span><h2>先纠正一个直觉</h2></div>
+    <p class="sec-sub">SillyTavern 是"给折腾党的前端"，夜谈是"给普通人的产品"。这两者的差异不是功能多少，是成本由谁承担、控制权交给谁。</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="tag">结构差异</div>
+        <h3>它拆协议，我们写模板</h3>
+        <p>ST 把一次对话拆成卡、书、预设、正则、摘要五份可替换的文件。夜谈把这些全部写死在 <code>PersonaPrompt.swift</code> 的 100 行里。前者能长生态，后者只能长功能。</p>
+      </div>
+      <div class="card">
+        <div class="tag">成本差异</div>
+        <h3>它烧用户的钱，我们烧自己的</h3>
+        <p>ST 用户自带 API Key，所以可以无限重抽；我们每 roll 一次都是真实成本。这直接决定了 swipe 必须做成"一次出两条候选"，而不是"点一次抽一次"。</p>
+      </div>
+      <div class="card">
+        <div class="tag">机会差异</div>
+        <h3>有三样东西它永远做不到</h3>
+        <p>语音通话、推荐流发现、亲密度成长。ST 是桌面工具，没有麦克风场景，没有"刷到一个人"，也没有关系进度。玩法必须长在这三样上。</p>
+      </div>
+    </div>
+
+    <p class="quote">ST 的六层里，夜谈只搭了半层卡、一层记。<br>但夜谈有的那三样，ST 一层都没有。</p>
+  </section>
+
+  <!-- ============ 02 ============ -->
+  <section id="layers">
+    <div class="sec-head"><span class="num">02</span><h2>六层拆解：用户到底买什么</h2></div>
+    <p class="sec-sub">把 ST 的功能按"用户的真实动机"重排，而不是按它的菜单排。左边是机制，中间是心理，右边是夜谈的现状。</p>
+
+    <table>
+      <thead>
+        <tr><th style="width:7%">层</th><th style="width:26%">ST 的机制</th><th style="width:19%">用户买的是</th><th style="width:26%">夜谈现状</th><th style="width:22%">判断</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>卡</td>
+          <td>Character Card V3（.charx），PNG 内嵌 JSON，备用开场白，可内嵌世界书</td>
+          <td>收集与收藏，角色是资产</td>
+          <td><code>Character</code> 散字段：name / tags / bio / opening / replies</td>
+          <td class="verdict">借格式，不借编辑器</td>
+        </tr>
+        <tr>
+          <td>书</td>
+          <td>World Info：关键词触发、递归激活、可绑定角色或人设或单个聊天</td>
+          <td>世界可信，不会前后矛盾</td>
+          <td class="no">无。记忆只是最近 3 轮的时间轴</td>
+          <td class="verdict yes">必做，但要换个名字</td>
+        </tr>
+        <tr>
+          <td>群</td>
+          <td>Group Chat：多卡同场，轮流 / 自然 / 列表三种发言规则，成员可静音</td>
+          <td>场面感与意外</td>
+          <td class="no">无。永远一对一</td>
+          <td class="verdict yes">差异化最大，语音版是护城河</td>
+        </tr>
+        <tr>
+          <td>记</td>
+          <td>Summarize 自动摘要、Vector Storage 向量检索、Data Bank 文档 RAG</td>
+          <td>关系连续，"她记得"</td>
+          <td>72 小时承接问候 + 最近 3 轮注入，每条截 40 字</td>
+          <td class="verdict">最影响留存，优先级最高</td>
+        </tr>
+        <tr>
+          <td>控</td>
+          <td>Presets、Advanced Formatting、Author's Note、Regex、STscript</td>
+          <td>品味表达，"这是我调的"</td>
+          <td>硬编码在 <code>PersonaPrompt.system</code></td>
+          <td class="verdict">降维成后台参数，不暴露给用户</td>
+        </tr>
+        <tr>
+          <td>变</td>
+          <td>Swipe 重抽、Branch 分支、Checkpoint 存档点</td>
+          <td>后悔药</td>
+          <td>只有失败重试（<code>ChatModel.retry</code>），成功的那句无法重来</td>
+          <td class="verdict yes">最便宜的高回报</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="note">
+      <b>一个容易被忽略的点：</b>ST 的"控"层看着最唬人，其实是最不该搬的。它存在的理由是用户要用各种奇怪的模型、要压榨每一分上下文。
+      夜谈只有一个模型、一种调性，把这层的价值转成我们自己的运营手感就行——傲娇角色 temperature 给 0.9，回忆场景压到 0.6，
+      用户不需要知道这些词。
+    </div>
+  </section>
+
+  <!-- ============ 03 ============ -->
+  <section id="gap">
+    <div class="sec-head"><span class="num">03</span><h2>差距矩阵</h2></div>
+    <p class="sec-sub">按"用户能感知到的程度"排序，而不是按工程量。感知越强、成本越低的，排得越前。</p>
+
+    <table>
+      <thead>
+        <tr><th style="width:14%">能力</th><th style="width:19%">ST 就绪度</th><th style="width:19%">夜谈就绪度</th><th style="width:20%">感知强度</th><th style="width:28%">建议</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>重抽</td><td class="rate">●●●</td><td class="rate">●<span class="off">●●</span></td><td class="verdict yes">极强，每天都用</td><td>P0，1 天</td></tr>
+        <tr><td>记忆条目</td><td class="rate">●●●</td><td class="rate">●●<span class="off">●</span></td><td class="verdict yes">强，决定长期留存</td><td>P1，3–4 天</td></tr>
+        <tr><td>多角色同场</td><td class="rate">●●●</td><td class="rate"><span class="off">●●●</span></td><td class="verdict">强，且高度可传播</td><td>P2，文字 3 天 / 语音 7 天</td></tr>
+        <tr><td>角色卡可分享</td><td class="rate">●●●</td><td class="rate">●<span class="off">●●</span></td><td class="verdict">中，是增长引擎</td><td>P3，配合剧本包</td></tr>
+        <tr><td>分支 / 存档点</td><td class="rate">●●●</td><td class="rate"><span class="off">●●●</span></td><td class="verdict">中，说错话时才想用</td><td>跟在重抽之后做</td></tr>
+        <tr><td>参数面板</td><td class="rate">●●●</td><td class="rate"><span class="off">●●●</span></td><td class="verdict no">负向，用户不想看</td><td>不做</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ============ 04 ============ -->
+  <section id="plays">
+    <div class="sec-head"><span class="num">04</span><h2>三个玩法，都是按钮不是面板</h2></div>
+    <p class="sec-sub">每个都对应 ST 的一层，但界面只留一个动作。用户永远不需要知道"世界书""swipe""group chat"这些词。</p>
+
+    <div class="plays">
+
+      <div class="play">
+        <div class="play-top">
+          <span class="badge">P0</span>
+          <h3>换个说法</h3>
+          <span class="k">对应 Swipe · 1–1.5 天</span>
+        </div>
+        <dl>
+          <dt>现状</dt>
+          <dd>只有失败重试。回复一旦成功落库，用户不满意只能自己再发一句"重说"——这本身就破坏了沉浸感。</dd>
+          <dt>做法</dt>
+          <dd>长按 AI 气泡 → 「换个说法」。气泡右上角出现 <code>1/2</code>，左右滑切换候选，选中的那条才进历史。原句保留，随时能切回。</dd>
+          <dt>关键决定</dt>
+          <dd>一次请求直接出 2 条候选（<code>n=2</code>），而不是点一次抽一次。ST 用户花自己的 token 可以无限 roll，我们花自己的钱。每轮上限 2 次，会员可放开。</dd>
+          <dt>改动点</dt>
+          <dd><code>ChatMessage</code> 加 <code>alternatives:[String]</code> 与 <code>altIndex</code>；<code>ChatHistoryStorage</code> 的快照编码要兼容旧数据（缺字段时按单条处理）。</dd>
+          <dt>为什么先做</dt>
+          <dd>它是"控制感"的最小单元。用户第一次发现"我不喜欢这句可以换掉"，对产品的信任会立刻不一样，而且它不改任何已有架构。</dd>
+        </dl>
+      </div>
+
+      <div class="play p1">
+        <div class="play-top">
+          <span class="badge">P1</span>
+          <h3>她记得</h3>
+          <span class="k">对应 World Info · 3–4 天</span>
+        </div>
+        <dl>
+          <dt>现状</dt>
+          <dd><code>PersonaPrompt</code> 只注入 <code>memory.suffix(3)</code>，每条截断 40 字。三周前说过的猫，第四轮就永久消失。不是模型记不住，是我们没给它。</dd>
+          <dt>做法</dt>
+          <dd>记忆从"滚动窗口"改成"条目库"：<code>LoreEntry{ keys, content, weight, source }</code>。读取时扫最近两条用户消息，命中就把条目拼进 prompt；<code>weight</code> 高的（关系设定、称呼）常驻。</dd>
+          <dt>写入策略</dt>
+          <dd>不是每轮都写。规则层用现成的 <code>ChatText.salientKeyword</code> 抓"名字、约定、偏好、事件"，每 8 轮再用小模型抽一次。写多了会变成流水账，写少了等于没有。</dd>
+          <dt>UI 是什么</dt>
+          <dd>不做 ST 那种表格编辑器，做「TA 的记事本」：一页纸，列出她记住的事，可以划掉、可以补一句。这比参数面板动人得多——用户第一次看见"她把我说的记住了"这件事被具象化。</dd>
+          <dt>顺带的好处</dt>
+          <dd>条目比原始对话短得多，同样的预算能装十倍信息量。做对了，上下文成本反而下降。</dd>
+        </dl>
+      </div>
+
+      <div class="play p2">
+        <div class="play-top">
+          <span class="badge">P2</span>
+          <h3>同一个屋檐</h3>
+          <span class="k">对应 Group Chat · 文字 3 天 / 语音 7 天</span>
+        </div>
+        <dl>
+          <dt>现状</dt>
+          <dd>永远一对一。没有"人物之间有关系"这件事，也就没有场面。</dd>
+          <dt>文字版</dt>
+          <dd>2–3 个角色同一会话。输出约束成 <code>【名字】内容</code>，前端解析后分气泡、分颜色。没说话的人保持"在场"，会对他人的话有反应。</dd>
+          <dt>语音版</dt>
+          <dd>复用 <code>VoiceCallView</code> 里现成的沉默调度（25 秒轻问 / 45 秒碎碎念）和 <code>CallScripts</code> 的台词池，把触发条件从"用户沉默多久"换成"被点名 / 情绪高 / 沉默 8 秒"来决定谁开口。抢话和打断本身就是戏，这是 ST 结构上给不了的东西。</dd>
+          <dt>风险</dt>
+          <dd>模型忘记前缀的概率不低。必须做容错：整段没前缀就归给主角色，多于一个前缀就按第一条切。不要把解析失败暴露成报错。</dd>
+          <dt>为什么值得</dt>
+          <dd>这是唯一一个"用户会截图发给朋友"的玩法。推荐流解决发现，群聊解决传播。</dd>
+        </dl>
+      </div>
+
+    </div>
+
+    <div class="note">
+      <b>还有一个几乎零成本的：</b>ST 的 Author's Note（在对话深度处插一句导演指令）。
+      换成夜谈的说法就是「场景卡」：雨夜、医院走廊、生日、停电。用户点一下，系统注入一段氛围指令和一条世界书条目。
+      UI 只是一个横向滑条，但沉浸感提升比很多大功能都明显。可以挂在 P1 里顺手做掉。
+    </div>
+  </section>
+
+  <!-- ============ 05 ============ -->
+  <section id="budget">
+    <div class="sec-head"><span class="num">05</span><h2>真正的内核是上下文预算</h2></div>
+    <p class="sec-sub">ST 最值钱的不是界面，是它对"这一段对话里每一分 token 该给谁"的管理。夜谈现在三处硬编码，等于没有预算概念。</p>
+
+    <table>
+      <thead>
+        <tr><th style="width:16%">段</th><th style="width:22%">夜谈现状</th><th style="width:16%">建议预算</th><th style="width:46%">策略</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>系统规则</td>
+          <td><code>PersonaPrompt</code> 硬编码 9 条</td>
+          <td>≈300 token</td>
+          <td>固定。通话与文字两套已经分开，保持</td>
+        </tr>
+        <tr>
+          <td>角色卡</td>
+          <td>bio + 3 条 replies，无上限</td>
+          <td>≈500 token</td>
+          <td>超预算时按段落截断，优先保人设与语气样本，砍外貌描写</td>
+        </tr>
+        <tr>
+          <td>世界书命中</td>
+          <td class="no">不存在</td>
+          <td>≈400 token</td>
+          <td>按 <code>weight</code> 排序填，装不下就丢低优先级的，宁可少不可乱</td>
+        </tr>
+        <tr>
+          <td>记忆</td>
+          <td><code>suffix(3)</code> + 每条 40 字</td>
+          <td>≈300 token</td>
+          <td>改成摘要 + 条目。超过 30 轮滚动压缩成一段第三人称回顾</td>
+        </tr>
+        <tr>
+          <td>对话历史</td>
+          <td><code>historyWindow = 20</code></td>
+          <td>剩余全部</td>
+          <td>从新往旧填，满即停；不再用固定条数</td>
+        </tr>
+        <tr>
+          <td>用户输入</td>
+          <td>—</td>
+          <td>最后插入</td>
+          <td>保证它是 messages 的最后一条（现有逻辑已正确）</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="note warn">
+      <b>成本提醒：</b>三个玩法都会推高单用户成本。重抽 +60%，群聊 +150%（多角色各自的人设都要进 context），
+      记忆条目反而 −20%。整体大概翻一倍。要么按角色定价，要么把重抽和群聊做成会员能力——这件事要在做之前定，不能做完再补。
+    </div>
+  </section>
+
+  <!-- ============ 06 ============ -->
+  <section id="skip">
+    <div class="sec-head"><span class="num">06</span><h2>明确不做的五件事</h2></div>
+    <p class="sec-sub">克制比补齐更重要。这些在 ST 里都成立，在手机上都站不住。</p>
+
+    <div class="skip">
+      <div><b>插件系统<span>生态</span></b>移动端没人装插件，审核也过不去。要做就做"一键套用"，不做开放扩展。</div>
+      <div><b>采样参数面板<span>控制</span></b>temperature / min-p / 上下文长度，用户看不懂也不需要。收进后台按角色预设。</div>
+      <div><b>正则脚本编辑器<span>清洗</span></b>输出清洗该在服务端预置好（去 AI 腔、去括号动作），不该让用户写正则。</div>
+      <div><b>本地模型接入<span>算力</span></b>手机跑不动 7B，跑得动的那点质量会毁掉体验。已有云端可换模型就够了。</div>
+      <div><b>世界书表格编辑器<span>形态</span></b>行列 + 触发词 + 优先级，是工程师的界面。换成"记事本"叙事形态。</div>
+      <div><b>无限重抽<span>成本</span></b>ST 用户花钱，我们烧钱。限次 + 会员，否则一个用户能把毛利抽穿。</div>
+    </div>
+  </section>
+
+  <!-- ============ 07 ============ -->
+  <section id="road">
+    <div class="sec-head"><span class="num">07</span><h2>落地顺序</h2></div>
+    <p class="sec-sub">先做能被感知的，再做能被传播的，最后做能收钱的。每一步都不推翻上一步。</p>
+
+    <div class="road">
+      <div>
+        <div class="when">第一周</div>
+        <div class="what">换个说法</div>
+        <div class="why">改 <code>ChatMessage</code> + 气泡交互 + <code>n=2</code> 请求。旧数据兼容，可回滚。</div>
+      </div>
+      <div>
+        <div class="when">第二、三周</div>
+        <div class="what">她记得</div>
+        <div class="why">条目结构 + 扫词注入 + 记事本页面。同时把 context 改成预算制。</div>
+      </div>
+      <div>
+        <div class="when">第四周起</div>
+        <div class="what">同一个屋檐（文字）</div>
+        <div class="why">输出格式约束 + 多气泡归属 + 说话人调度。跑通后再评估语音版。</div>
+      </div>
+      <div>
+        <div class="when">一季度</div>
+        <div class="what">剧本包</div>
+        <div class="why">云端 <code>agents</code> 表扩 <code>card_json</code> / <code>lorebook_json</code> / 价格。卡 + 书 + 语音 + BGM 一起卖。</div>
+      </div>
+    </div>
+
+    <div class="note">
+      <b>三个要提前想清楚的风险：</b>
+      ① UGC 卡的审核——现在 <code>published</code> 只是一个布尔值，没有审核流，卡一旦能带世界书，擦边内容的面积会变大；
+      ② 卡版权——用户导入别人的卡，需要来源字段与下架机制；
+      ③ 语音群聊的打断逻辑——多人同时说话，<code>AVAudioSession</code> 和 TTS 队列都要重排，这块是真正的工程量。
+    </div>
+  </section>
+
+  <footer>
+    <span>夜谈 · 产品方案 · 基于 ios/AICompanion 现有代码结构</span>
+    <span>对照 SillyTavern v1.19.0</span>
+  </footer>
+
+</div>
+</body>
+</html>

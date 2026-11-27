@@ -1,0 +1,157 @@
+{
+  "enabled": {
+    "description": "总开关",
+    "type": "bool",
+    "default": true
+  },
+  "api_key": {
+    "description": "BreezeBlue API Key",
+    "type": "string",
+    "secret": true,
+    "obvious_hint": true,
+    "hint": "只填在 WebUI 插件配置里，或服务端环境变量 BREEZE_API_KEY。不要写进聊天、截图或日志。",
+    "default": ""
+  },
+  "base_url": {
+    "description": "API 地址",
+    "type": "string",
+    "default": "https://api.breeze.blue"
+  },
+  "voice_id": {
+    "description": "Voice ID",
+    "type": "string",
+    "default": "voc_8yud7hz7c9q2"
+  },
+  "model_id": {
+    "description": "模型 ID（留空由服务端选择）",
+    "type": "string",
+    "default": "breeze-tts-2"
+  },
+  "language_code": {
+    "description": "语言代码",
+    "type": "string",
+    "default": "zh"
+  },
+  "instructions": {
+    "description": "表演指令（可选，中文）",
+    "type": "text",
+    "default": ""
+  },
+  "speed": {
+    "description": "语速倍率（0.5-2.0，变调不变音；夜谈建议 0.95）",
+    "type": "float",
+    "default": 1.0
+  },
+  "guidance_scale": {
+    "description": "表现力强度（1.0-10.0，越高越贴 instructions，过高可能不稳）",
+    "type": "float",
+    "default": 1.0
+  },
+  "use_speaker_boost": {
+    "description": "增强与音色本体的相似度（填了 instructions 时可能被忽略）",
+    "type": "bool",
+    "default": false
+  },
+  "output_format": {
+    "description": "音频格式",
+    "type": "string",
+    "default": "wav_24000",
+    "options": ["wav_24000", "mp3_24000_64", "mp3_24000_96"]
+  },
+  "trigger_mode": {
+    "description": "触发方式：ratio=按概率随机；explicit=仅明确索要",
+    "type": "string",
+    "default": "ratio",
+    "options": ["ratio", "explicit"]
+  },
+  "only_explicit": {
+    "description": "仅明确索要语音才发（已弃用，建议改 trigger_mode=explicit）",
+    "type": "bool",
+    "default": false
+  },
+  "voice_ratio": {
+    "description": "随机语音概率（0-1，0.3 即 30%）",
+    "type": "float",
+    "default": 0.3
+  },
+  "explicit_keywords": {
+    "description": "明确索要语音的关键词",
+    "type": "list",
+    "default": ["发语音", "语音说", "用语音", "说给我听", "念给我听", "voice"]
+  },
+  "min_chars": {
+    "description": "低于该字数不发语音",
+    "type": "int",
+    "default": 2
+  },
+  "max_chars": {
+    "description": "超过该字数保留文字（云端单次上限 1000）",
+    "type": "int",
+    "default": 60
+  },
+  "max_lines": {
+    "description": "超过该行数保留文字",
+    "type": "int",
+    "default": 3
+  },
+  "cooldown_seconds": {
+    "description": "同一会话两次语音的最小间隔（秒）",
+    "type": "int",
+    "default": 90
+  },
+  "daily_limit_global": {
+    "description": "全局每日语音条数上限",
+    "type": "int",
+    "default": 30
+  },
+  "daily_limit_session": {
+    "description": "单会话每日语音条数上限",
+    "type": "int",
+    "default": 10
+  },
+  "platforms": {
+    "description": "生效的平台适配器",
+    "type": "list",
+    "default": ["aiocqhttp"]
+  },
+  "use_file_service": {
+    "description": "把音频注册成 HTTP 链接再发（AstrBot 与 NapCat 分容器时必开）",
+    "type": "bool",
+    "default": false
+  },
+  "test_command_enabled": {
+    "description": "允许管理员用 /bbvoice test 精确发一条测试语音",
+    "type": "bool",
+    "default": true
+  },
+  "allowed_groups": {
+    "description": "仅这些群号生效（留空=全部会话）",
+    "type": "list",
+    "default": []
+  },
+  "skip_if_media": {
+    "description": "回复里含图片/视频/文件时不转语音",
+    "type": "bool",
+    "default": true
+  },
+  "timeout_seconds": {
+    "description": "单次合成超时（秒）",
+    "type": "int",
+    "default": 20
+  },
+  "max_retries": {
+    "description": "失败重试次数（只对超时/5xx）",
+    "type": "int",
+    "default": 1
+  },
+  "ffmpeg_path": {
+    "description": "ffmpeg 路径（留空自动查找；仅 mp3/pcm 输出需要）",
+    "type": "string",
+    "default": ""
+  },
+  "cache_days": {
+    "description": "音频缓存保留天数",
+    "type": "int",
+    "default": 7
+  }
+}

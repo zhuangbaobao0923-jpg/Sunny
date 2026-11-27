@@ -5,6 +5,7 @@ import Observation
 
 /// 全部走 OpenAI 兼容协议（/chat/completions + SSE 流式），换厂商只改地址和模型名。
 enum LLMProvider: String, CaseIterable, Identifiable {
+    case wbProxy
     case zhipu
     case deepseek
     case dashscope
@@ -16,6 +17,7 @@ enum LLMProvider: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
+        case .wbProxy: return "夜谈通道（推荐，内置 Key）"
         case .zhipu: return "智谱 GLM（有免费模型）"
         case .deepseek: return "DeepSeek"
         case .dashscope: return "阿里云百炼"
@@ -27,6 +29,7 @@ enum LLMProvider: String, CaseIterable, Identifiable {
 
     var shortTitle: String {
         switch self {
+        case .wbProxy: return "夜谈通道"
         case .zhipu: return "智谱"
         case .deepseek: return "DeepSeek"
         case .dashscope: return "百炼"
@@ -38,6 +41,7 @@ enum LLMProvider: String, CaseIterable, Identifiable {
 
     var baseURL: String {
         switch self {
+        case .wbProxy: return "https://wb.kxpp.me/v1"
         case .zhipu: return "https://open.bigmodel.cn/api/paas/v4"
         case .deepseek: return "https://api.deepseek.com/v1"
         case .dashscope: return "https://dashscope.aliyuncs.com/compatible-mode/v1"
@@ -49,6 +53,7 @@ enum LLMProvider: String, CaseIterable, Identifiable {
 
     var model: String {
         switch self {
+        case .wbProxy: return "cn:glm-5.3-flash"
         case .zhipu: return "glm-4-flash"
         case .deepseek: return "deepseek-chat"
         case .dashscope: return "qwen-flash"
@@ -59,10 +64,11 @@ enum LLMProvider: String, CaseIterable, Identifiable {
     }
 
     /// 是否需要 API Key（本机 Ollama 不需要）
-    var needsKey: Bool { self != .ollama }
+    var needsKey: Bool { self != .ollama && self != .wbProxy }
 
     var note: String {
         switch self {
+        case .wbProxy: return "内置通道，Key 已配好；glm-5.3-flash 按量计费但很便宜"
         case .zhipu: return "glm-4-flash 目前免费，注册后在控制台创建 API Key 即可"
         case .deepseek: return "按量计费，价格很低；需在开放平台创建 Key"
         case .dashscope: return "qwen-flash 有免费额度；百炼控制台创建 Key"
@@ -150,6 +156,41 @@ final class LLMSettings {
             // 首次启动默认启用真实模型（失败会自动回落本地人设，不影响可用性）
             isEnabled = true
         }
+
+        // 一次性迁移：切到内置的「夜谈通道」（glm-5.3-flash）
+        let proxyMigrated = "llm.migrated.wbproxy.v1"
+        if !defaults.bool(forKey: proxyMigrated) {
+            defaults.set(true, forKey: proxyMigrated)
+            provider = .wbProxy
+            baseURL = LLMProvider.wbProxy.baseURL
+            model = LLMProvider.wbProxy.model
+            apiKey = "my_key"
+            isEnabled = true
+            defaults.set(provider.rawValue, forKey: providerKey)
+            defaults.set(baseURL, forKey: baseURLKey)
+            defaults.set(model, forKey: modelKey)
+            defaults.set(true, forKey: enabledKey)
+            Keychain.set(apiKey, for: keychainAccount)
+        }
+
+        // 一次性迁移：把对话模型切回内置的智谱 GLM。
+        // 之前试用 DeepSeek 时，provider 和 Key 都被改成了 DeepSeek 的；
+        // 只改 provider 不改 Key 会拿 DeepSeek 的 Key 去请求智谱 → 401，
+        // 所以这里连 Key 一起换回内置的。
+        let migrated = "llm.restored.zhipu.v1"
+        if !defaults.bool(forKey: migrated) {
+            defaults.set(true, forKey: migrated)
+            provider = .zhipu
+            baseURL = LLMProvider.zhipu.baseURL
+            model = LLMProvider.zhipu.model
+            apiKey = LocalSecrets.zhipuAPIKey
+            isEnabled = true
+            defaults.set(provider.rawValue, forKey: providerKey)
+            defaults.set(baseURL, forKey: baseURLKey)
+            defaults.set(model, forKey: modelKey)
+            defaults.set(true, forKey: enabledKey)
+            Keychain.set(apiKey, for: keychainAccount)
+        }
     }
 
     /// 是否填了智谱 Key（生图同理）
@@ -184,6 +225,7 @@ final class LLMSettings {
     /// 各厂商 Key 申请入口（给设置页做说明）
     var consoleHint: String {
         switch provider {
+        case .wbProxy: return "内置通道，无需申请"
         case .zhipu: return "open.bigmodel.cn → API Keys"
         case .deepseek: return "platform.deepseek.com → API keys"
         case .dashscope: return "bailian.console.aliyun.com → API-KEY"

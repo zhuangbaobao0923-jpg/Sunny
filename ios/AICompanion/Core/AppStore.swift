@@ -9,12 +9,15 @@ enum AppTab: Hashable {
 
 enum Route: Hashable {
     case msgs
-    case agents          // 高光时刻 · 全部智能体
+    case agents          // 高光时刻 · 全部角色
     case chat(String)
     case settings
     case profile
     case voice
     case model
+    case memory
+    case lore
+    case loreCharacter(String)
 }
 
 @MainActor
@@ -53,6 +56,8 @@ final class AppRouter {
 final class AppStore {
     var characters: [Character]
     var myAgents: [MyAgent]
+    /// 云端别人发布的角色（登录后拉取，进首页推荐池）
+    var cloudCharacters: [Character] = []
     var profile: UserProfile
     var toast: String?
 
@@ -97,14 +102,32 @@ final class AppStore {
         characters.first { $0.id == id }
     }
 
-    /// 首页推荐池：官方角色 + 用户创建的智能体，每次进入随机洗牌，
+    /// 首页推荐池：官方角色 + 用户创建的角色，每次进入随机洗牌，
     /// 保证「每次进 App 都能遇到新面孔」。
     func recommendationFeed() -> [Character] {
-        // 用户创建的智能体还没有对应角色 → 现场物化并进池
-        for agent in myAgents where !characters.contains(where: { $0.name == agent.name }) {
-            chatCharacter(for: agent)
+        // 用户创建的角色还没有对应角色 → 现场物化并进池。
+        // 必须按 id 判断：名字是展示用的，两个作者都可能叫「小助理」
+        for agent in myAgents {
+            let stableID = Self.localAgentID(agent.name)
+            if !characters.contains(where: { $0.id == stableID }) {
+                chatCharacter(for: agent)
+            }
         }
-        return characters.shuffled()
+        // 云端公开的角色也进推荐（别人发布的，你能刷到）
+        let cloud = cloudCharacters.filter { item in
+            !characters.contains(where: { $0.id == item.id })
+        }
+        return (characters + cloud).shuffled()
+    }
+
+    /// 登录后拉一次云端公开角色
+    func refreshCloudAgents() async {
+        guard CloudSession.shared.isLoggedIn else {
+            cloudCharacters = []
+            return
+        }
+        guard let list = try? await CloudAgents.fetchPublished() else { return }
+        cloudCharacters = list.enumerated().map { Character.cloud($0.element, index: $0.offset) }
     }
 
     func markRead(_ id: String) {
@@ -146,14 +169,23 @@ final class AppStore {
             saturation: draft.saturation
         )
         myAgents.insert(agent, at: 0)
-        showToast("智能体「\(agent.name)」已创建")
+        showToast("角色「\(agent.name)」已创建")
         return agent
     }
 
     /// 高光时刻卡片 → 可对话的角色。没有则从人设资料动态创建并加入列表。
     @discardableResult
+    /// 自定义角色的稳定 id：名字是唯一能跨启动保持稳定的东西，但要限定在本地命名空间里，
+    /// 避免和云端角色（cloud-<数字 id>）撞车
+    static func localAgentID(_ name: String) -> String {
+        "agent-\(name.trimmingCharacters(in: .whitespaces))"
+    }
+
     func chatCharacter(for agent: MyAgent) -> Character {
-        if let existing = characters.first(where: { $0.name == agent.name }) {
+        let stableID = Self.localAgentID(agent.name)
+        // 按 id 找，不能按名字找：否则同名的云端角色会被当成这个本地角色，
+        // 聊天记录会写到 cloud-<id> 上，两个人互相串
+        if let existing = characters.first(where: { $0.id == stableID }) {
             return existing
         }
         if let index = myAgents.firstIndex(where: { $0.id == agent.id }) {
@@ -164,7 +196,9 @@ final class AppStore {
         ]
         let palette = palettes[abs(agent.name.hashValue) % palettes.count]
         let character = Character(
-            id: "agent-\(agent.id.uuidString)",
+            // 用名字拼稳定 id：MyAgent.id 是每次启动新生成的 UUID，
+            // 拿它拼 id 会导致每次重启聊天记录都落到新 key 上（像被清空）
+            id: stableID,
             name: agent.name,
             author: "@\(profile.nickname)",
             imageName: agent.imageName ?? "char_shenjinghan",
@@ -177,12 +211,23 @@ final class AppStore {
                 : "（抬起头，放下手边的事）你来啦。我是\(agent.name)——\(agent.summary)",
             replies: [],
             voiceKind: VoiceKind.kind(for: agent.voiceName),
+            voiceName: agent.voiceName,
             likeCount: 0,
             unread: 0,
-            lastMessage: agent.summary,
-            lastActivity: Date()
+            // 没有对话记录就不该出现在「热聊」里，也别把时间写成“现在”
+            lastMessage: "",
+            lastActivity: .distantPast
         )
-        characters.append(character)
+        // 如果之前聊过，把真实的最后一条记录接回来
+        if let snapshot = ChatHistoryStorage.load(characterID: character.id),
+           let last = snapshot.messages.last {
+            var updated = character
+            updated.lastMessage = last.text
+            updated.lastActivity = last.date
+            characters.append(updated)
+        } else {
+            characters.append(character)
+        }
         return character
     }
 
@@ -200,11 +245,20 @@ final class AppStore {
 enum ProfileStorage {
     private static let key = "user.profile"
 
+    /// 逐字段容错读取：老版本存的 JSON 少字段时，不要整份丢掉回默认值，
+    /// 否则用户改过的个性签名/昵称会「莫名回到默认」。
     static func load() -> UserProfile {
+        var profile = UserProfile()
         guard let data = UserDefaults.standard.data(forKey: key),
-              let profile = try? JSONDecoder().decode(UserProfile.self, from: data) else {
-            return UserProfile()
+              let dict = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] else {
+            return profile
         }
+        profile.nickname = dict["nickname"] as? String ?? profile.nickname
+        profile.accountID = dict["accountID"] as? String ?? profile.accountID
+        profile.gender = dict["gender"] as? String ?? profile.gender
+        profile.city = dict["city"] as? String ?? profile.city
+        profile.signature = dict["signature"] as? String ?? profile.signature
+        profile.isLoggedIn = dict["isLoggedIn"] as? Bool ?? profile.isLoggedIn
         return profile
     }
 

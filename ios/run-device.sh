@@ -81,7 +81,7 @@ PY
 
 echo "→ 开始编译（首次会自动申请签名证书，可能需要 1-2 分钟）..."
 
-xcodebuild build \
+BUILD_LOG=$(xcodebuild build \
   -project AICompanion.xcodeproj \
   -scheme AICompanion \
   -configuration Debug \
@@ -89,7 +89,18 @@ xcodebuild build \
   -derivedDataPath ./build \
   -allowProvisioningUpdates \
   OTHER_SWIFT_FLAGS='$(inherited) -disable-sandbox' \
-  2>&1 | grep -E "error:|BUILD SUCCEEDED|BUILD FAILED" || true
+  2>&1) || true
+
+echo "$BUILD_LOG" | grep -E "error:|BUILD SUCCEEDED|BUILD FAILED" || true
+
+# 构建失败时绝不继续安装：否则会把上一次的旧包装上去，看起来「装好了」其实是旧代码
+if ! echo "$BUILD_LOG" | grep -q "BUILD SUCCEEDED"; then
+  echo ""
+  echo "✗ 编译失败，已终止安装（刚才没有安装任何东西）"
+  echo "  常见原因：Xcode 里 Apple ID 掉线 / 描述文件过期 →"
+  echo "  打开 Xcode → Settings → Accounts 重新登录，再跑一次本脚本"
+  exit 1
+fi
 
 APP="./build/Build/Products/Debug-iphoneos/AICompanion.app"
 if [[ ! -d "$APP" ]]; then

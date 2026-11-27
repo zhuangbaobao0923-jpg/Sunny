@@ -1,0 +1,116 @@
+{
+  "updated_at": "2026-11-25",
+  "note": "夜谈角色音色名单。已按用户决赛选择锁定。",
+  "female": {
+    "general": {
+      "name": "冷面铁捕",
+      "voice_id": "voc_4fcdc882gyps",
+      "chosen_speed": 0.95,
+      "status": "locked"
+    },
+    "empress": {
+      "name": "凤仪（皇后）",
+      "voice_id": "voc_psyuun5rky74",
+      "saved_from": "gvi_rgsj8gdk5vf4",
+      "variant": "厚",
+      "status": "saved",
+      "backup_candidate": {
+        "generated_voice_id": "gvi_hhjwdq36mpxr",
+        "note": "冷",
+        "saved": false
+      }
+    },
+    "consort": {
+      "name": "幽兰影",
+      "voice_id": "voc_dcccp6b9p466",
+      "status": "locked"
+    },
+    "princess": {
+      "name": "灵动汐语",
+      "voice_id": "voc_tzneby749yja",
+      "status": "locked"
+    },
+    "sovereign": {
+      "name": "冷峻调查官",
+      "voice_id": "voc_4xhyh9d63huc",
+      "status": "locked"
+    },
+    "sister": {
+      "name": "邻家暖心",
+      "voice_id": "voc_p36dbdewwvae",
+      "status": "locked"
+    },
+    "dafeiyu": [
+      {
+        "name": "偶像版",
+        "voice_id": "voc_rn489h83rcvs",
+        "status": "reserved"
+      },
+      {
+        "name": "迷糊版",
+        "voice_id": "voc_8yud7hz7c9q2",
+        "status": "reserved"
+      },
+      {
+        "name": "机灵版",
+        "voice_id": "voc_u3nxkd5578wc",
+        "status": "reserved"
+      }
+    ]
+  },
+  "male": {
+    "shen_jinghan": {
+      "name": "幽巷引路人",
+      "voice_id": "voc_gbaz4j9uyq97"
+    },
+    "xie_wujiu": {
+      "name": "深海低语者",
+      "voice_id": "voc_mtb2gb2f565z"
+    },
+    "xiao_xuance": {
+      "name": "铁血教头",
+      "voice_id": "voc_mvdhh8xj9e7k"
+    },
+    "pei_jingnian": {
+      "name": "醇厚匠心师",
+      "voice_id": "voc_aa4s73p25jt2"
+    },
+    "backup_boss": {
+      "name": "星舰指挥官",
+      "voice_id": "voc_q8d8a99gxa7f"
+    },
+    "backup_drama": {
+      "name": "幕后独白者",
+      "voice_id": "voc_k7tz43q2yxc2"
+    }
+  },
+  "casting_note": "凌云裳改用冷面铁捕 0.95；纳兰铮改用青史执笔人（冷、宫廷、不撞声）。冷面铁捕同时是女将军首选，未来两角色同台时女将军换荒漠女领航 voc_jvutj6uph9d9。",
+  "characters": {
+    "sjh": {
+      "name": "沈惊寒",
+      "voice": "幽巷引路人",
+      "voice_id": "voc_gbaz4j9uyq97"
+    },
+    "nlz": {
+      "name": "纳兰铮",
+      "voice": "青史执笔人",
+      "voice_id": "voc_3nw7zw44cxek"
+    },
+    "swt": {
+      "name": "苏晚棠",
+      "voice": "大肥鱼·迷糊版",
+      "voice_id": "voc_8yud7hz7c9q2"
+    },
+    "xwj": {
+      "name": "谢无咎",
+      "voice": "深海低语者",
+      "voice_id": "voc_mtb2gb2f565z"
+    },
+    "lyc": {
+      "name": "凌云裳",
+      "voice": "冷面铁捕",
+      "voice_id": "voc_4fcdc882gyps",
+      "speed": 0.95
+    }
+  }
+}

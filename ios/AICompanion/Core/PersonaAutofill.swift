@@ -2,11 +2,11 @@ import Foundation
 
 // MARK: - 人设自动生成（真模型优先，本地随机兜底）
 
-/// 创建智能体「自动生成」的人设产出。
+/// 创建角色「自动生成」的人设产出。
 struct PersonaAutofill {
     var nickname: String?   // 仅当用户没填昵称时才采用
     var gender: String?
-    var setting: String     // 智能体设定
+    var setting: String     // 角色设定
     var intro: String       // 对外简介
     var opening: String     // 开场白
     /// 本次创作方向（古风/都市/民国…），用于 toast 与去重
@@ -50,7 +50,7 @@ enum PersonaAutofillEngine {
             || !userOpening.trimmingCharacters(in: .whitespaces).isEmpty
 
         let system = """
-        你是「夜谈」App 的智能体人设编剧。根据用户给定的信息，创作一个有记忆点的角色人设。
+        你是「夜谈」App 的角色人设编剧。根据用户给定的信息，创作一个有记忆点的角色人设。
         本次创作方向：\(picked.tag)（\(picked.scene)），性格基调：\(picked.trait)。必须落在该方向里。
         硬性要求：
         - setting：80~140 字，依次包含「身份、性格、语言风格、与主控的关系、禁忌」五个部分，用「身份：…。性格：…。语言：…。与主控关系：…。禁忌：…」的格式。

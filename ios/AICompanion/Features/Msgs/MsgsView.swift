@@ -13,7 +13,10 @@ struct MsgsView: View {
     }
 
     private var conversations: [Character] {
-        let base = store.characters.sorted { $0.lastActivity > $1.lastActivity }
+        // 没有对话记录的角色不进热聊（自定义角色创建后不该空占一条）
+        let base = store.characters
+            .filter { !$0.lastMessage.isEmpty || $0.unread > 0 }
+            .sorted { $0.lastActivity > $1.lastActivity }
         switch filter {
         case .all: return base
         case .unread: return base.filter { $0.unread > 0 }
@@ -63,6 +66,7 @@ struct MsgsView: View {
                             ForEach(conversations) { character in
                                 Button {
                                     store.markRead(character.id)
+                                    guard AuthGate.shared.require() else { return }
                                     router.push(.chat(character.id))
                                 } label: {
                                     row(character)

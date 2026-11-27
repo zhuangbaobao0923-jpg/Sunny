@@ -276,7 +276,7 @@ enum AudioFileCache {
 
     static func existing(key: String) -> URL? {
         // 早期版本写成 .audio、现在写 .mp3，两种都要认，否则缓存永远不命中
-        for ext in ["mp3", "audio"] {
+        for ext in ["mp3", "wav", "audio"] {
             let url = dir.appendingPathComponent(hash(key) + "." + ext)
             if FileManager.default.fileExists(atPath: url.path) { return url }
         }

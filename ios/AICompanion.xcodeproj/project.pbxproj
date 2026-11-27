@@ -14,11 +14,19 @@
 			remoteGlobalIDString = 1A0000000000000000000010;
 			remoteInfo = AICompanion;
 		};
+		1A00000000000000000000B9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1A0000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1A0000000000000000000010;
+			remoteInfo = AICompanion;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		1A0000000000000000000011 /* AICompanion.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AICompanion.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A0000000000000000000031 /* AICompanionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AICompanionTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		1A00000000000000000000B8 /* AICompanionUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AICompanionUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -45,6 +53,11 @@
 			path = AICompanionTests;
 			sourceTree = "<group>";
 		};
+		1A00000000000000000000B0 /* AICompanionUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = AICompanionUITests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -62,6 +75,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		1A00000000000000000000B3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -70,6 +90,7 @@
 			children = (
 				1A0000000000000000000018 /* AICompanion */,
 				1A0000000000000000000038 /* AICompanionTests */,
+				1A00000000000000000000B0 /* AICompanionUITests */,
 				1A0000000000000000000003 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -79,6 +100,7 @@
 			children = (
 				1A0000000000000000000011 /* AICompanion.app */,
 				1A0000000000000000000031 /* AICompanionTests.xctest */,
+				1A00000000000000000000B8 /* AICompanionUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -131,6 +153,29 @@
 			productReference = 1A0000000000000000000031 /* AICompanionTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		1A00000000000000000000B1 /* AICompanionUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1A00000000000000000000B7 /* Build configuration list for PBXNativeTarget "AICompanionUITests" */;
+			buildPhases = (
+				1A00000000000000000000B2 /* Sources */,
+				1A00000000000000000000B3 /* Frameworks */,
+				1A00000000000000000000B4 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				1A00000000000000000000BA /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				1A00000000000000000000B0 /* AICompanionUITests */,
+			);
+			name = AICompanionUITests;
+			packageProductDependencies = (
+			);
+			productName = AICompanionUITests;
+			productReference = 1A00000000000000000000B8 /* AICompanionUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -143,6 +188,10 @@
 				TargetAttributes = {
 					1A0000000000000000000010 = {
 						CreatedOnToolsVersion = 27.2;
+					};
+					1A00000000000000000000B1 = {
+						CreatedOnToolsVersion = 27.2;
+						TestTargetID = 1A0000000000000000000010;
 					};
 					1A0000000000000000000030 = {
 						CreatedOnToolsVersion = 27.2;
@@ -167,6 +216,7 @@
 			targets = (
 				1A0000000000000000000010 /* AICompanion */,
 				1A0000000000000000000030 /* AICompanionTests */,
+				1A00000000000000000000B1 /* AICompanionUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -180,6 +230,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		1A0000000000000000000034 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1A00000000000000000000B4 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -203,6 +260,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		1A00000000000000000000B2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -210,6 +274,11 @@
 			isa = PBXTargetDependency;
 			target = 1A0000000000000000000010 /* AICompanion */;
 			targetProxy = 1A00000000000000000000A0 /* PBXContainerItemProxy */;
+		};
+		1A00000000000000000000BA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1A0000000000000000000010 /* AICompanion */;
+			targetProxy = 1A00000000000000000000B9 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -361,6 +430,38 @@
 			};
 			name = Release;
 		};
+		1A00000000000000000000B5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = MA8D6FLJ32;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.chat.zyq.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_TARGET_NAME = AICompanion;
+			};
+			name = Debug;
+		};
+		1A00000000000000000000B6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = MA8D6FLJ32;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.chat.zyq.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_TARGET_NAME = AICompanion;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -387,6 +488,15 @@
 			buildConfigurations = (
 				1A0000000000000000000036 /* Debug */,
 				1A0000000000000000000037 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1A00000000000000000000B7 /* Build configuration list for PBXNativeTarget "AICompanionUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1A00000000000000000000B5 /* Debug */,
+				1A00000000000000000000B6 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -14,6 +14,8 @@ struct Character: Identifiable, Hashable {
     let replies: [String]
     /// 声音画像（TTS 音色）
     var voiceKind: VoiceKind = .softGirl
+    /// 用户实际选的音色名（如「冷面铁捕」「深海低语者」），用于精确命中 Breeze voice_id
+    var voiceName: String? = nil
     var likeCount: Int
     var liked: Bool = false
     var unread: Int
@@ -45,7 +47,7 @@ struct UserProfile: Equatable, Codable {
     var initial: String { String(nickname.prefix(1)) }
 }
 
-/// 生成中的草稿（创建智能体表单）
+/// 生成中的草稿（创建角色表单）
 struct AgentDraft {
     var imageName: String?
     var hue: Double = 0
@@ -63,10 +65,10 @@ struct AgentDraft {
         var result: [String] = []
         if nickname.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { result.append("昵称") }
         if gender == nil { result.append("性别") }
-        if setting.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { result.append("智能体设定") }
+        if setting.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { result.append("角色设定") }
         if intro.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { result.append("对外简介") }
         if opening.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { result.append("开场白") }
-        if voice == nil { result.append("智能体声音") }
+        if voice == nil { result.append("角色声音") }
         return result
     }
     var canSubmit: Bool { missingFields.isEmpty }

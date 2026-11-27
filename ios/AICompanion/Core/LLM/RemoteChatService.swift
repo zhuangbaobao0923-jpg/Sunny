@@ -32,7 +32,8 @@ struct RemoteChatService: ChatService {
         history: [ChatMessage],
         userText: String,
         level: Int,
-        memory: [MemoryTurn]
+        memory: [MemoryTurn],
+        context: ReplyContext
     ) -> AsyncThrowingStream<String, Error> {
         let config = self.config
 
@@ -60,7 +61,8 @@ struct RemoteChatService: ChatService {
                             history: history,
                             userText: userText,
                             level: level,
-                            memory: memory
+                            memory: memory,
+                            context: context
                         )
                     ]
                     request.httpBody = try JSONSerialization.data(withJSONObject: body)

@@ -88,9 +88,12 @@ enum VoiceKind: String, CaseIterable {
     var rate: Float { 0.5 }
 
     static func kind(for voiceName: String?) -> VoiceKind {
+        let name = voiceName ?? ""
+        // 新音色统一查总表：没有 Key / Breeze 失败时用最接近的旧引擎音色兜底
+        if let option = VoiceCatalog.option(named: name) { return option.kind }
         // 旧数据兼容：创建页曾用「隔壁班同学」表示明快女声
-        if voiceName == "隔壁班同学" { return .livelyGirl }
-        return VoiceKind(rawValue: voiceName ?? "") ?? .softGirl
+        if name == "隔壁班同学" { return .livelyGirl }
+        return VoiceKind(rawValue: name) ?? .softGirl
     }
 }
 

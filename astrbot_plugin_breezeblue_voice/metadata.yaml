@@ -1,0 +1,10 @@
+name: astrbot_plugin_breezeblue_voice
+display_name: BreezeBlue 语音回复
+short_desc: 30% 概率把文字回复换成 BreezeBlue 语音，失败自动回退文字
+desc: 在发送前把 LLM 的文字回复按概率替换为 BreezeBlue 云端 TTS 语音条；支持明确索要语音、长度上限、每日额度与会话冷却，不改动模型、人设、记忆和 QQ 连接。
+version: 0.2.0
+author: local
+repo: ""
+astrbot_version: ">=4.16,<5"
+support_platforms:
+  - aiocqhttp

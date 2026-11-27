@@ -38,6 +38,31 @@ struct FaceStudioView: View {
 
     private var selected: VisualPlan? { plans.first { $0.id == selectedID } }
 
+    /// 一键生成 = 三张图（全身 / 半身 / 胸像）。首图好了只是「能看」，
+    /// 另外两张还在路上时整批仍算进行中——按钮不能提前放行。
+    private var isBusy: Bool { isGenerating || isFilling }
+    private var finishedCount: Int { plans.filter { $0.localPath != nil }.count }
+
+    /// 生成中不拿本地占位图冒充成品：还没出真图就先显示加载动画
+    private var previewImage: VisualPlan? {
+        guard let selected else { return nil }
+        if selected.localPath != nil { return selected }
+        return isBusy ? nil : selected
+    }
+
+    private var primaryTitle: String {
+        if isBusy { return "正在生成 \(finishedCount)/3…" }
+        guard let selected else { return "生成图片" }
+        return selected.localPath == nil ? "重新生成" : "使用这张"
+    }
+
+    private var primaryEnabled: Bool {
+        if isBusy { return false }
+        guard let selected else { return true }
+        // 整批跑完（成功或失败）且当前这张是真图，才允许「使用这张」
+        return selected.localPath != nil
+    }
+
     var body: some View {
         ZStack(alignment: .top) {
             Color(hex: 0x0A0A12).ignoresSafeArea()
@@ -118,28 +143,24 @@ struct FaceStudioView: View {
                 .frame(height: Spacing.hit)
                 .contentShape(Rectangle())
             }
+            .accessibilityIdentifier("face.back")
             .buttonStyle(.plain)
             .accessibilityLabel("关闭形象工作室")
 
             Spacer(minLength: 4)
 
-            Text("创建智能体形象")
+            Text("创建角色形象")
                 .font(Typo.body(15.5, weight: .semibold))
                 .foregroundStyle(Palette.ink)
                 .layoutPriority(1)
 
             Spacer(minLength: 4)
 
-            Button(action: onClose) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(Palette.ink3)
-                    .frame(width: 32, height: 32)
-                    .background(Circle().fill(Color.white.opacity(0.06)))
-            }
-            .buttonStyle(.plain)
-            .frame(width: Spacing.hit, height: Spacing.hit)
-            .accessibilityLabel("关闭")
+            // 右边留一个和左边「返回」等宽的空白，只负责让标题居中。
+            // 原来这里还有个 ✕：同一层有两个关闭入口，删掉一个才不显得重复。
+            Color.clear
+                .frame(width: Spacing.hit, height: Spacing.hit)
+                .accessibilityHidden(true)
         }
         .padding(.horizontal, 12)
         .padding(.top, 2)
@@ -174,16 +195,28 @@ struct FaceStudioView: View {
             RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .fill(Color(hex: 0x14141F))
 
-            if let selected {
-                // 背景：同一张图模糊铺满，负责填满卡片
-                AgentImage(name: imgName(selected), hue: selected.hue, saturation: selected.saturation)
-                    .blur(radius: 26)
-                    .opacity(0.38)
+            if let shown = previewImage {
+                // 背景：同一张图模糊铺满，负责填满卡片；还没出图就用设计占位
+                Group {
+                    if shown.localPath != nil {
+                        AgentImage(name: imgName(shown), hue: shown.hue, saturation: shown.saturation)
+                    } else {
+                        PlanPlaceholder()
+                    }
+                }
+                .blur(radius: 26)
+                .opacity(0.38)
                 // 主体：固定 3:4（与出图比例一致），fit = 完整人物，绝不裁切。
                 // 之前把竖图塞进横向卡片再 fit，两侧全是空白，看起来像被切了。
-                AgentImage(name: imgName(selected), hue: selected.hue, saturation: selected.saturation,
-                           contentMode: .fit)
-                    .frame(width: 246, height: 328)
+                Group {
+                    if shown.localPath != nil {
+                        AgentImage(name: imgName(shown), hue: shown.hue, saturation: shown.saturation,
+                                   contentMode: .fit)
+                    } else {
+                        PlanPlaceholder()
+                    }
+                }
+                .frame(width: 246, height: 328)
                     .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                     .overlay(
                         RoundedRectangle(cornerRadius: 12, style: .continuous)
@@ -193,20 +226,23 @@ struct FaceStudioView: View {
                     .onTapGesture {
                         withAnimation(.easeOut(duration: 0.2)) { showFullImage = true }
                     }
-            } else if isGenerating {
+            } else if isBusy {
                 VStack(spacing: 12) {
                     ProgressView().tint(Palette.gold).scaleEffect(1.15)
-                    Text(stages[min(stageIndex, stages.count - 1)])
+                    Text(isFilling ? "第一张好了，正在补另外两张…" : stages[min(stageIndex, stages.count - 1)])
                         .font(Typo.body(12.5))
                         .foregroundStyle(Palette.ink2)
-                    HStack(spacing: 5) {
-                        ForEach(stages.indices, id: \.self) { i in
+                    // 三张图各自的进度：点亮的方块 = 已经落到本地
+                    HStack(spacing: 6) {
+                        ForEach(0..<3, id: \.self) { i in
                             Capsule()
-                                .fill(i <= stageIndex ? AnyShapeStyle(Palette.goldGradient) : AnyShapeStyle(Palette.line2))
-                                .frame(height: 3)
+                                .fill(i < finishedCount ? AnyShapeStyle(Palette.goldGradient) : AnyShapeStyle(Palette.line2))
+                                .frame(width: 34, height: 3)
                         }
                     }
-                    .padding(.horizontal, 60)
+                    Text("已完成 \(finishedCount)/3")
+                        .font(Typo.body(10.5))
+                        .foregroundStyle(Palette.ink3)
                 }
             } else {
                 VStack(spacing: 10) {
@@ -224,7 +260,7 @@ struct FaceStudioView: View {
                 }
             }
 
-            if let selected, selected.localPath == nil {
+            if let selected, selected.localPath == nil, !isBusy {
                 VStack {
                     HStack {
                         Text("本地方案 · 占位")
@@ -241,12 +277,12 @@ struct FaceStudioView: View {
                 .padding(10)
             }
 
-            if isFilling {
+            if isFilling, previewImage != nil {
                 VStack {
                     Spacer()
                     HStack(spacing: 6) {
                         ProgressView().controlSize(.mini).tint(Palette.gold)
-                        Text("正在补另外两张…")
+                        Text("正在补另外两张 \(finishedCount)/3")
                             .font(Typo.body(11))
                             .foregroundStyle(Palette.ink2)
                     }
@@ -294,11 +330,32 @@ struct FaceStudioView: View {
                     Button {
                         withAnimation(Motion.quick) { selectedID = plan.id }
                     } label: {
-                        AgentImage(name: imgName(plan), hue: plan.hue, saturation: plan.saturation)
+                        Group {
+                            if plan.localPath != nil {
+                                AgentImage(name: imgName(plan), hue: plan.hue, saturation: plan.saturation)
+                            } else {
+                                PlanPlaceholder(compact: true)
+                            }
+                        }
                             .frame(width: 54, height: 72)
                             .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+                            .overlay {
+                                // 还没出真图：盖一层加载态，别让人以为这就是成品
+                                if plan.localPath == nil, isBusy {
+                                    ZStack {
+                                        Color(hex: 0x0A0A12).opacity(0.55)
+                                        VStack(spacing: 3) {
+                                            ProgressView().controlSize(.mini).tint(Palette.gold)
+                                            Text("生成中")
+                                                .font(.system(size: 8))
+                                                .foregroundStyle(Palette.ink3)
+                                        }
+                                    }
+                                    .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+                                }
+                            }
                             .overlay(alignment: .topTrailing) {
-                                if plan.localPath == nil {
+                                if plan.localPath == nil, !isBusy {
                                     Text("本地")
                                         .font(.system(size: 8, weight: .medium))
                                         .foregroundStyle(Palette.ink3)
@@ -330,7 +387,8 @@ struct FaceStudioView: View {
                     .overlay(RoundedRectangle(cornerRadius: 9, style: .continuous).stroke(Palette.line2, lineWidth: 1))
                 }
                 .buttonStyle(.plain)
-                .disabled(isGenerating)
+                .disabled(isBusy)
+                .opacity(isBusy ? 0.45 : 1)
 
                 Spacer(minLength: 0)
             }
@@ -417,23 +475,22 @@ struct FaceStudioView: View {
 
             Button {
                 descFocused = false
-                if let selected {
-                    onPick(imgName(selected),
-                           selected.localPath == nil ? selected.hue : 0,
-                           selected.localPath == nil ? selected.saturation : 1)
+                if let selected, selected.localPath != nil, !isBusy {
+                    onPick(imgName(selected), 0, 1)
                 } else {
                     generate()
                 }
             } label: {
                 HStack(spacing: 7) {
-                    if isGenerating {
+                    if isBusy {
                         ProgressView().controlSize(.small).tint(Color(hex: 0x2A1F08))
                     }
-                    Text(isGenerating ? "正在生成…" : (selected == nil ? "生成图片" : "使用这张"))
+                    Text(primaryTitle)
                 }
             }
-            .buttonStyle(GoldButtonStyle(enabled: !isGenerating))
-            .disabled(isGenerating)
+            .buttonStyle(GoldButtonStyle(enabled: primaryEnabled))
+            .disabled(!primaryEnabled)
+            .accessibilityIdentifier("face.cta")
 
             if selected != nil {
                 Button { regenerateBatch() } label: {
@@ -443,7 +500,8 @@ struct FaceStudioView: View {
                         .frame(maxWidth: .infinity, minHeight: 26)
                 }
                 .buttonStyle(.plain)
-                .disabled(isGenerating)
+                .disabled(isBusy)
+                .opacity(isBusy ? 0.4 : 1)
             }
         }
         .padding(.horizontal, 18)
@@ -468,23 +526,42 @@ struct FaceStudioView: View {
     private func fullPrompt(for plan: VisualPlan, index: Int) -> String {
         let framing: String
         let english: String
+        let extra: String
         switch index {
         case 0:
-            framing = "角色全身立绘，人物完整站立、从头到脚全部入镜，不裁切，竖构图，人物居中，单人，留出头顶与脚下空间"
+            framing = "角色全身立绘，人物完整站立、从头到脚全部入镜，不裁切，竖构图，人物居中，单人"
             english = "full body shot, head to toe, standing full-length portrait, entire figure visible, vertical composition"
+            // 全身图最容易翻车：脸小、手脚崩。单独加约束
+            extra = "面部清晰可辨，五官完整，双手自然放松，双脚不被裁切，服装细节完整"
         case 1:
             framing = "角色立绘，半身构图（头顶到腰），人物完整入镜，竖构图，人物居中，单人"
             english = "cowboy shot, head to waist, entire upper body visible, vertical composition"
+            extra = "腰线以上完整，面部清晰，服装纹理可见"
         default:
             framing = "角色胸像特写，面部细节清晰，眼神有戏，竖构图，单人"
             english = "close-up portrait, detailed face, cinematic expression"
+            extra = "面部占据主要画面，皮肤质感清晰，眼神聚焦，睫毛与发丝分明"
         }
+
+        // 画质的关键不在模型档次，在提示词有没有说清「风格/光影/镜头/质量」。
+        // 同样用免费的 cogview-3-flash，加上这几段，出图会从平涂变成半写实插画。
+        let style = "风格：半写实二次元插画，五官精致，皮肤细腻有质感，发丝有高光，服装有布料纹理"
+        let light = "光影：电影级侧逆光，轮廓光勾边，柔和补光，背景轻微虚化"
+        let lens = "镜头：85mm 人像镜头，浅景深"
+        let quality = "质量：8K，超精细，构图稳定，主体居中，画面干净"
+        let avoid = "不要多余的手指，不要扭曲的五官，不要文字与水印"
+
         let subject = "画面主体：\(plan.prompt)，\(english)"
-        return hint.isEmpty ? "\(framing)。\(subject)" : "\(hint)。\(framing)。\(subject)"
+        let detail = "\(extra)。\(style)。\(light)。\(lens)。\(quality)。\(avoid)"
+
+        return hint.isEmpty
+            ? "\(framing)。\(subject)。\(detail)"
+            : "\(hint)。\(framing)。\(subject)。\(detail)"
     }
 
     private func generate() {
-        guard !isGenerating else { return }
+        // 三张没跑完之前不接受新的一批：否则老批次的回填会串到新批次上
+        guard !isBusy else { return }
         descFocused = false
         failureNote = nil
         isGenerating = true
@@ -613,5 +690,32 @@ struct FaceStudioView: View {
             batch = Int(args[i + 1]) ?? 0
         }
         generate()
+    }
+}
+
+
+/// 还没生成时的占位卡：干净、克制，不拿本地角色图冒充实拍。
+private struct PlanPlaceholder: View {
+    var compact = false
+
+    var body: some View {
+        ZStack {
+            LinearGradient(colors: [Color(hex: 0x1C1C2B), Color(hex: 0x0D0D15)],
+                           startPoint: .top, endPoint: .bottom)
+            RadialGradient(colors: [Palette.gold.opacity(0.18), .clear],
+                           center: .topLeading,
+                           startRadius: 4,
+                           endRadius: compact ? 70 : 220)
+            VStack(spacing: compact ? 0 : 10) {
+                Image(systemName: "person.crop.artframe")
+                    .font(.system(size: compact ? 17 : 40, weight: .ultraLight))
+                    .foregroundStyle(Color.white.opacity(0.30))
+                if !compact {
+                    Text("待生成")
+                        .font(Typo.body(11))
+                        .foregroundStyle(Palette.ink3)
+                }
+            }
+        }
     }
 }

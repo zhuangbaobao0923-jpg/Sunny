@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>凌云裳：三只音色对比</title>
+<style>
+  :root{
+    --paper:#F8F7F3; --card:#FFFFFF; --ink:#17171C; --ink2:#52525E; --ink3:#8B8B96;
+    --line:#E4E1D8; --line2:#D0CCBF;
+    --indigo:#2E3A6B; --indigo-soft:#EDEFF7;
+    --amber:#9A6A12; --amber-soft:#FBF2DF;
+    --green:#2C6B52; --green-soft:#E8F2EC;
+    --red:#9B3B34; --red-soft:#F8E9E7;
+    --serif:"Songti SC","STSong","SimSun",Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Arial,sans-serif;
+    --mono:"SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.75;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:900px;margin:0 auto;padding:60px 28px 90px}
+  .kicker{font-size:11px;letter-spacing:.2em;color:var(--amber);text-transform:uppercase;margin-bottom:16px}
+  h1{font-family:var(--serif);font-size:38px;line-height:1.3;font-weight:600;margin-bottom:12px}
+  h1 em{font-style:normal;color:var(--indigo)}
+  .lede{font-size:15px;color:var(--ink2);max-width:720px;line-height:1.85}
+  .quote{margin:22px 0 26px;padding:16px 18px;background:var(--card);border-left:3px solid var(--amber);border-radius:8px;font-size:14px;color:var(--ink2);line-height:1.8}
+  .quote b{display:block;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:5px;font-weight:500}
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:18px}
+  .card.pick{border-color:#B9BED6;box-shadow:0 0 0 3px rgba(46,58,107,.05)}
+  .card .tag{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-bottom:4px}
+  .card h2{font-family:var(--serif);font-size:20px;font-weight:600;margin-bottom:2px}
+  .card .id{font-family:var(--mono);font-size:10.5px;color:var(--ink3);margin-bottom:8px;word-break:break-all}
+  audio{width:100%;height:36px;margin:2px 0 8px}
+  .card p{font-size:12.5px;color:var(--ink2);line-height:1.65;min-height:70px}
+  .chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px}
+  .chip{font-size:10px;padding:3px 7px;border-radius:999px;background:#F1EFE8;color:#5F5E5A}
+  .chip.good{background:var(--green-soft);color:var(--green)}
+  .chip.warn{background:var(--amber-soft);color:var(--amber)}
+  .chip.bad{background:var(--red-soft);color:var(--red)}
+  .chip.blue{background:var(--indigo-soft);color:var(--indigo)}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin:18px 0;background:var(--card)}
+  thead th{text-align:left;font-weight:500;font-size:10.5px;letter-spacing:.08em;color:var(--ink3);padding:10px 12px;border-bottom:1px solid var(--line2);text-transform:uppercase;background:#FBFAF7}
+  tbody td{padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink2);line-height:1.65}
+  tbody td:first-child{color:var(--ink);font-weight:500;white-space:nowrap}
+  tbody tr:last-child td{border-bottom:none}
+  .callout{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--indigo);border-radius:10px;padding:16px 18px;margin:18px 0}
+  .callout.warn{border-left-color:var(--amber);background:var(--amber-soft)}
+  .callout .t{font-weight:600;font-size:13px;margin-bottom:4px;color:var(--ink)}
+  .callout p{font-size:12.8px;margin:3px 0;color:var(--ink2)}
+  code{font-family:var(--mono);font-size:12px;background:#EFEDE6;padding:1.5px 5px;border-radius:4px;color:#3A3A46}
+  footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);font-size:11.5px;color:var(--ink3);line-height:1.8}
+  @media (max-width:760px){.wrap{padding:40px 16px 66px}h1{font-size:30px}.cards{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">凌云裳 · 同一句台词 · 三只候选</div>
+  <h1>她要的是师姐<br><em>不是甜妹</em></h1>
+  <p class="lede">凌云裳是云梦泽的小师姐，剑法冠绝一宗、最烦绕弯子，嘴上冷淡、手比谁都诚实。现在的机灵版太甜，撑不住“再来”那股劲。三只候选念同一句，你听差别。</p>
+
+  <div class="quote">
+    <b>台词</b>
+    再来。这次你要还是接不住，就乖乖去扎马步。
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <div class="tag">候选 A · 冷面师姐</div>
+      <h2>敏之组长</h2>
+      <div class="id">voc_88a7brnfb4tb · middle_aged</div>
+      <audio controls preload="metadata" src="audio/roles/lingyun-mizhi.mp3"></audio>
+      <p>中音清冷、字头锋利，干练镇定，冷峻里偶尔露一点温情。最贴“冷面师姐”，但年龄感偏 30+。</p>
+      <div class="chips">
+        <span class="chip good">最像师姐</span>
+        <span class="chip">清冷</span>
+        <span class="chip warn">年龄偏大</span>
+      </div>
+    </div>
+
+    <div class="card pick">
+      <div class="tag">候选 B · 武侠本命</div>
+      <h2>冷面铁捕</h2>
+      <div class="id">voc_4fcdc882gyps · young · speed 0.95</div>
+      <audio controls preload="metadata" src="audio/roles/lingyun-tiebu.mp3"></audio>
+      <p>中低音扎实、语速利落、有权威感，官方写明“专为古风互动剧情、武侠广播剧设计”。最贴“剑法冠绝”。</p>
+      <div class="chips">
+        <span class="chip good">最贴武侠</span>
+        <span class="chip">年轻</span>
+        <span class="chip bad">纳兰铮在用</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="tag">候选 C · 傲气</div>
+      <h2>傲气学姐</h2>
+      <div class="id">voc_kwje43kewnst · young</div>
+      <audio controls preload="metadata" src="audio/roles/lingyun-aoqi.mp3"></audio>
+      <p>明亮、咬字清晰，语速轻快里带自信与挑衅。贴“再来”的傲气，但偏现代校园，古装感弱。</p>
+      <div class="chips">
+        <span class="chip">傲</span>
+        <span class="chip">年轻</span>
+        <span class="chip warn">偏现代</span>
+      </div>
+    </div>
+  </div>
+
+  <table>
+    <thead><tr><th style="width:20%">音色</th><th>像凌云裳的地方</th><th style="width:26%">风险</th></tr></thead>
+    <tbody>
+      <tr><td>敏之组长</td><td>冷面、干练、字头锋利</td><td>年龄感大，像掌门师姐而不是小师姐</td></tr>
+      <tr><td>冷面铁捕</td><td>年轻、武侠、利落、外冷内柔</td><td>纳兰铮已占用，两个角色会撞声</td></tr>
+      <tr><td>傲气学姐</td><td>“再来”的挑衅与自信</td><td>现代校园感，古装出戏</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <div class="t">我的建议：把冷面铁捕给凌云裳，纳兰铮换走</div>
+    <p>冷面铁捕本来就是为“古风武侠对白”设计的，给凌云裳最合适。纳兰铮换成 <strong>青史执笔人</strong>（清冷、宫廷旧事，更像落难郡主）或 <strong>幽兰影</strong>（甜里带刺，适合“哟，今日嘴甜”）。这样两只各归其位，也不用接受敏之组长的年龄感。</p>
+  </div>
+
+  <div class="callout warn">
+    <div class="t">如果你不想动纳兰铮</div>
+    <p>那就凌云裳用 <strong>敏之组长</strong>：最接近“冷面师姐”，代价是听起来比设定年长。或者用 <strong>傲气学姐</strong>，年轻、够傲，但古装感弱。两条都不完美，看你更能接受哪一种。</p>
+  </div>
+
+  <footer>
+    <p>三只音色均为真实调用 BreezeBlue 生成，台词相同。文件在 <code>docs/audio/roles/lingyun-*.mp3</code>。</p>
+    <p>冷面铁捕、敏之组长、傲气学姐均为官方公开音色。</p>
+  </footer>
+
+</div>
+</body>
+</html>

@@ -12,6 +12,13 @@ enum ChatError: LocalizedError, Equatable {
     }
 }
 
+/// 回复场景：文字聊天 / 语音通话。
+/// 通话要的是「嘴上说出来的话」——短句、口语、没有括号动作；文字聊天才允许演。
+enum ReplyContext {
+    case chat
+    case call
+}
+
 /// 对话流式输出。真模型走 RemoteChatService（OpenAI 兼容 SSE），本地演示走 MockChatService，UI 层无需改动。
 protocol ChatService {
     func streamReply(
@@ -19,18 +26,32 @@ protocol ChatService {
         history: [ChatMessage],
         userText: String,
         level: Int,
-        memory: [MemoryTurn]
+        memory: [MemoryTurn],
+        context: ReplyContext
     ) -> AsyncThrowingStream<String, Error>
 }
 
 extension ChatService {
+    /// 兼容旧调用：不带场景时按文字聊天处理
+    func streamReply(
+        for character: Character,
+        history: [ChatMessage],
+        userText: String,
+        level: Int,
+        memory: [MemoryTurn]
+    ) -> AsyncThrowingStream<String, Error> {
+        streamReply(for: character, history: history, userText: userText,
+                    level: level, memory: memory, context: .chat)
+    }
+
     /// 兼容旧调用：不带记忆/等级时按默认值走
     func streamReply(
         for character: Character,
         history: [ChatMessage],
         userText: String
     ) -> AsyncThrowingStream<String, Error> {
-        streamReply(for: character, history: history, userText: userText, level: 1, memory: [])
+        streamReply(for: character, history: history, userText: userText,
+                    level: 1, memory: [], context: .chat)
     }
 }
 
@@ -47,14 +68,23 @@ struct MockChatService: ChatService {
         history: [ChatMessage],
         userText: String,
         level: Int,
-        memory: [MemoryTurn]
+        memory: [MemoryTurn],
+        context: ReplyContext
     ) -> AsyncThrowingStream<String, Error> {
-        let reply = PersonaEngine.reply(
-            for: character,
-            history: history,
-            userText: userText,
-            intimacyLevel: level > 0 ? level : intimacyLevel(in: history)
-        )
+        // 通话走「电话接话」：短句、口语、没有括号动作。
+        // 本地人设引擎的台词是文字聊天的腔调，电话里念出来太像小说。
+        let reply: String
+        if context == .call {
+            reply = CallTalk.reply(for: character, history: history,
+                                   userText: userText, level: level)
+        } else {
+            reply = PersonaEngine.reply(
+                for: character,
+                history: history,
+                userText: userText,
+                intimacyLevel: level > 0 ? level : intimacyLevel(in: history)
+            )
+        }
         let shouldFail = Double.random(in: 0..<1) < failureRate
         let delay = firstTokenDelay
         let interval = chunkInterval

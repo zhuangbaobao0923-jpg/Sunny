@@ -102,7 +102,6 @@ ios/AICompanionTests/     单元测试
 ios/tools/                开发脚本：TTS 探针、音色基频普查、本地 TTS 服务
 MBTIRoleplay/             另一个实验工程「心屿」（MBTI 人格内核，独立 Xcode 工程）
 ai-companion-prototype/   最早的高保真 HTML 原型
-app/                      Android 空模板（不是本 App，可忽略）
 ```
 
 ## 开发

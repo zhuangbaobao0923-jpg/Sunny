@@ -21,6 +21,7 @@ enum SampleData {
                     "（烛火晃了一下，他抬眼，眼底薄冰裂了道缝）……你的名字，我记下了。"
                 ],
                 voiceKind: .deepMale,
+                voiceName: "幽巷引路人",
                 likeCount: 11,
                 unread: 2,
                 lastMessage: "（烛火在密信边缘停了一停）风急还是风缓…",
@@ -40,6 +41,7 @@ enum SampleData {
                     "（垂眸瞥了眼自己袖口，神色淡下来）瘦不瘦与你何干？倒是你，又来听我数银子。"
                 ],
                 voiceKind: .livelyGirl,
+                voiceName: "青史执笔人",
                 likeCount: 23,
                 unread: 0,
                 lastMessage: "（垂眸瞥了眼自己袖口）瘦不瘦与你何干？",
@@ -59,6 +61,7 @@ enum SampleData {
                     "（耳根悄悄红了，嘴上却不肯认）才、才不是特意给你留的，只是刚好多出来而已！"
                 ],
                 voiceKind: .softGirl,
+                voiceName: "大肥鱼·迷糊版",
                 likeCount: 8,
                 unread: 1,
                 lastMessage: "（抱着课本小跑到你桌边）放学一起走吗？",
@@ -78,6 +81,7 @@ enum SampleData {
                     "（把披风丢过来，别开脸）穿上。着凉了别指望我背着你去大夫那儿。"
                 ],
                 voiceKind: .deepMale,
+                voiceName: "深海低语者",
                 likeCount: 15,
                 unread: 0,
                 lastMessage: "（刀鞘敲了敲地面，抬眼）进来喝酒。",
@@ -97,6 +101,7 @@ enum SampleData {
                     "（难得没摆脸色，声音低了些）……山下来人了，你待在我看得见的地方。"
                 ],
                 voiceKind: .livelyGirl,
+                voiceName: "冷面铁捕",
                 likeCount: 19,
                 unread: 0,
                 lastMessage: "（收剑入鞘，斜你一眼）来了就别想空手回去。",
@@ -110,7 +115,7 @@ enum SampleData {
             name: "萧玄策",
             summary: "身经百战的大将军，最终卸甲归田，最恨别人提朝堂旧事。",
             setting: "身份：镇北将军，如今解甲归田。性格：外冷内热，说一不二，护短。语言：短句，带军旅气，偶尔冷幽默。与主控关系：旧部，也是唯一敢跟他顶嘴的人。",
-            voiceName: "沉金男声",
+            voiceName: "铁血教头",
             views: 10,
             imageName: "char_xiaoxuance"
         ),
@@ -118,7 +123,7 @@ enum SampleData {
             name: "裴经年",
             summary: "冷面授课的法学讲师，讲台上不苟言笑，讲台下温和缱绻。",
             setting: "身份：大学法学讲师。性格：克制、理性、毒舌但温柔。语言：条理清晰，爱引经据典，偶尔冷不丁幽默。与主控关系：亦师亦友，暗生情愫而不自知。",
-            voiceName: "清冷少年",
+            voiceName: "醇厚匠心师",
             views: 6,
             imageName: "char_peijingnian"
         )
@@ -126,9 +131,10 @@ enum SampleData {
 
     // 静态预设引导词已废弃：提示词面板改由 QuickReplyEngine 基于 AI 最新发言实时生成
 
-    /// 创建智能体的音色候选：统一从 VoiceKind 派生（14 档，覆盖常见男声/女声/儿童/方言）
+    /// 创建角色的音色候选：统一从 VoiceKind 派生（14 档，覆盖常见男声/女声/儿童/方言）
+    /// 创建角色可选音色：统一取自 VoiceCatalog，聊天与通话用同一份 voice_id
     static var voiceOptions: [(name: String, gender: String, desc: String)] {
-        VoiceKind.allCases.map { ($0.rawValue, $0.gender, $0.desc) }
+        VoiceCatalog.all.map { ($0.name, $0.gender, $0.desc) }
     }
 
     static let artStyles: [String] = ["经典", "最近", "动漫", "可爱", "写实", "创意", "国风"]

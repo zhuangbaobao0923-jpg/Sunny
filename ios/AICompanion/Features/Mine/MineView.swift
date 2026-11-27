@@ -2,6 +2,8 @@ import SwiftUI
 
 struct MineView: View {
     @Environment(AppStore.self) private var store
+    @State private var cloud = CloudSession.shared
+    @State private var avatarStore = AvatarStore.shared
     @Environment(AppRouter.self) private var router
 
     private let columns = [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)]
@@ -22,6 +24,8 @@ struct MineView: View {
                 profileMeta
                     .padding(.horizontal, 18)
                     .padding(.top, 42)
+                    .contentShape(Rectangle())
+                    .onTapGesture { openProfile() }
                 statsRow
                     .padding(.horizontal, 18)
                     .padding(.top, 18)
@@ -87,12 +91,12 @@ struct MineView: View {
             HStack(alignment: .center, spacing: 14) {
                 avatar
                 VStack(alignment: .leading, spacing: 5) {
-                    Text(store.profile.isLoggedIn ? store.profile.nickname : "点击登录")
+                    Text(cloud.isLoggedIn ? cloud.displayName : "点击登录")
                         .font(Typo.body(22, weight: .bold))
                         .foregroundStyle(.white)
                         .shadow(color: .black.opacity(0.55), radius: 8, y: 2)
                         .lineLimit(1)
-                    Text(store.profile.isLoggedIn ? store.profile.accountID : "登录后体验完整功能")
+                    Text(cloud.isLoggedIn ? "已登录" : "登录后发布自己的角色")
                         .font(.system(size: 11.5, design: .monospaced))
                         .foregroundStyle(.white.opacity(0.6))
                 }
@@ -101,17 +105,25 @@ struct MineView: View {
             .padding(.horizontal, 18)
             .padding(.bottom, 2)
             .offset(y: 32)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                openProfile()
+            }
         }
         .frame(height: 330)
     }
 
     private var avatar: some View {
         ZStack {
-            Image("mine_avatar")
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(width: 76, height: 76)
-                .clipShape(Circle())
+            Group {
+                if let image = avatarStore.image {
+                    Image(uiImage: image).resizable().aspectRatio(contentMode: .fill)
+                } else {
+                    Image("mine_avatar").resizable().aspectRatio(contentMode: .fill)
+                }
+            }
+            .frame(width: 76, height: 76)
+            .clipShape(Circle())
         }
         .overlay(
             Circle()
@@ -153,6 +165,15 @@ struct MineView: View {
         }
     }
 
+    /// 点头像/昵称/签名都进「账号资料」；没登录先弹登录
+    private func openProfile() {
+        if cloud.isLoggedIn {
+            router.push(.profile)
+        } else {
+            AuthGate.shared.needsLogin = true
+        }
+    }
+
     private func metaChip(icon: String? = nil, text: String) -> some View {
         HStack(spacing: 3.5) {
             if let icon {
@@ -178,7 +199,7 @@ struct MineView: View {
     private var statsRow: some View {
         // 只展示真实存在的数据：没有关注/粉丝功能，就不该摆两个 0 在那里
         HStack(spacing: 0) {
-            statItem("\(store.myAgents.count)", "智能体")
+            statItem("\(store.myAgents.count)", "角色")
             divider
             statItem("\(totalViews)", "被浏览")
         }
@@ -238,10 +259,10 @@ struct MineView: View {
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel("查看全部智能体")
+                    .accessibilityLabel("查看全部角色")
                 }
             }
-            Text("你创建的智能体都在这里")
+            Text("你创建的角色都在这里")
                 .font(Typo.body(12))
                 .foregroundStyle(Palette.ink3)
                 .padding(.bottom, 14)
@@ -251,7 +272,7 @@ struct MineView: View {
                     Image(systemName: "sparkles")
                         .font(.system(size: 26, weight: .light))
                         .foregroundStyle(Palette.gold.opacity(0.6))
-                    Text("还没有创建过智能体")
+                    Text("还没有创建过角色")
                         .font(Typo.body(13))
                         .foregroundStyle(Palette.ink3)
                     Button {
@@ -273,7 +294,8 @@ struct MineView: View {
                     ForEach(Array(store.myAgents.prefix(4))) { agent in
                         AgentCardView(agent: agent) {
                             let character = store.chatCharacter(for: agent)
-                            router.push(.chat(character.id))
+                            guard AuthGate.shared.require() else { return }
+                                    router.push(.chat(character.id))
                         }
                     }
                 }

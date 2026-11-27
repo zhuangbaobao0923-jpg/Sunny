@@ -19,11 +19,21 @@ struct ChatSnapshot: Codable {
 }
 
 enum ChatHistoryStorage {
-    private static let prefix = "chat.history."
+    /// 带上账号作用域：同一台手机换号登录，不会读到上一个人的聊天记录
+    private static var prefix: String { "chat.history.\(AccountScope.id)." }
+    private static let legacyPrefix = "chat.history."
 
     static func load(characterID: String) -> ChatSnapshot? {
-        guard let data = UserDefaults.standard.data(forKey: prefix + characterID) else { return nil }
-        return try? JSONDecoder().decode(ChatSnapshot.self, from: data)
+        let defaults = UserDefaults.standard
+        if let data = defaults.data(forKey: prefix + characterID) {
+            return try? JSONDecoder().decode(ChatSnapshot.self, from: data)
+        }
+        // 老版本没有账号维度：读到时顺手迁到当前账号名下
+        if let legacy = defaults.data(forKey: legacyPrefix + characterID) {
+            defaults.set(legacy, forKey: prefix + characterID)
+            return try? JSONDecoder().decode(ChatSnapshot.self, from: legacy)
+        }
+        return nil
     }
 
     static func save(_ snapshot: ChatSnapshot, characterID: String) {

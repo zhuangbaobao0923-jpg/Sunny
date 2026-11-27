@@ -50,8 +50,9 @@ final class LLMPromptTests: XCTestCase {
         XCTAssertEqual(messages.last?["content"], "今天风大吗")
         // 失败气泡不进上下文
         XCTAssertFalse(messages.contains { $0["content"] == "网络开小差了" })
-        // 历史 3 条 + system + 本轮 user
-        XCTAssertEqual(messages.count, 5)
+        // 历史 3 条 + system（有世界书时会多一条「事实提醒」）+ 本轮 user
+        XCTAssertGreaterThanOrEqual(messages.count, 5)
+        XCTAssertTrue(messages.dropFirst().dropLast().allSatisfy { $0["role"] == "system" || $0["role"] == "assistant" || $0["role"] == "user" })
     }
 
     func testConfigBuildsChatCompletionsURL() {
@@ -65,7 +66,11 @@ final class LLMPromptTests: XCTestCase {
     func testProviderPresetsAreOpenAICompatible() {
         for provider in LLMProvider.allCases where provider != .custom {
             XCTAssertFalse(provider.model.isEmpty, "\(provider.rawValue) 缺默认模型")
-            if provider != .ollama {
+            if provider == .wbProxy {
+                // 内置通道：https + 不需要用户填 Key
+                XCTAssertTrue(provider.baseURL.hasPrefix("https://"))
+                XCTAssertFalse(provider.needsKey)
+            } else if provider != .ollama {
                 XCTAssertTrue(provider.baseURL.hasPrefix("https://"), "\(provider.rawValue) 地址应为 https")
                 XCTAssertTrue(provider.needsKey)
             } else {

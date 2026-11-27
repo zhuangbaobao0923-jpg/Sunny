@@ -20,5 +20,12 @@
 	<string>用于语音通话时收录你说的话，识别成文字发给角色。</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>用于把你说的语音实时转成文字，与角色进行语音对话。</string>
+	<!-- 通话必须能后台运行：手机贴在耳边熄屏、或放桌上自动锁屏时，
+	     AVSpeechSynthesizer / AVAudioPlayer 的播放和录音不能停，
+	     否则系统一挂起 App，人物就「不说话」了。 -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+	</array>
 </dict>
 </plist>

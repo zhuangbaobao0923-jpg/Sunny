@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BreezeBlue × 夜谈：语音接入与验收方案</title>
+<style>
+  :root{
+    --paper:#F8F7F3; --card:#FFFFFF; --ink:#17171C; --ink2:#54545F; --ink3:#8A8A96;
+    --line:#E4E1D8; --line2:#D2CEC1;
+    --indigo:#2E3A6B; --indigo-soft:#EDEFF7;
+    --amber:#9A6A12; --amber-soft:#FBF2DF;
+    --green:#2C6B52; --green-soft:#E8F2EC;
+    --red:#9B3B34; --red-soft:#F8E9E7;
+    --serif:"Songti SC","STSong","SimSun",Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Arial,sans-serif;
+    --mono:"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--paper); color:var(--ink); font-family:var(--sans);
+    font-size:15px; line-height:1.78; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1040px;margin:0 auto;padding:72px 36px 120px}
+  .kicker{font-size:11.5px;letter-spacing:.22em;color:var(--amber);text-transform:uppercase;margin-bottom:24px}
+  h1{font-family:var(--serif);font-size:46px;line-height:1.24;font-weight:600;letter-spacing:.01em;margin-bottom:20px}
+  h1 em{font-style:normal;color:var(--indigo)}
+  .lede{font-size:16.5px;color:var(--ink2);max-width:720px;line-height:1.85}
+  .meta{margin-top:32px;padding-top:20px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink3);display:flex;gap:26px;flex-wrap:wrap}
+  .meta b{color:var(--ink2);font-weight:500}
+
+  .toc{margin-top:40px;display:flex;flex-wrap:wrap;gap:8px}
+  .toc a{font-size:12px;color:var(--ink2);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:6px 13px;transition:.2s;background:var(--card)}
+  .toc a:hover{color:var(--indigo);border-color:#B9BED6}
+
+  section{margin-top:76px}
+  .sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:12px}
+  .num{font-family:var(--serif);font-size:12.5px;color:var(--amber);letter-spacing:.12em;min-width:24px}
+  h2{font-family:var(--serif);font-size:27px;font-weight:600;letter-spacing:.01em}
+  .sec-sub{color:var(--ink2);font-size:14.5px;max-width:760px;margin-bottom:28px;padding-left:38px}
+  h3{font-size:15.5px;font-weight:600;margin:30px 0 10px}
+  p{margin:10px 0;color:var(--ink2)}
+  p strong, li strong{color:var(--ink);font-weight:600}
+  ul,ol{margin:10px 0 10px 22px;color:var(--ink2)}
+  li{margin:6px 0}
+
+  .callout{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--indigo);border-radius:10px;padding:20px 22px;margin:20px 0}
+  .callout.warn{border-left-color:var(--amber);background:var(--amber-soft)}
+  .callout.danger{border-left-color:var(--red);background:var(--red-soft)}
+  .callout .t{font-weight:600;font-size:13.5px;margin-bottom:6px;color:var(--ink);letter-spacing:.02em}
+  .callout p{margin:4px 0;font-size:13.8px}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin:14px 0 6px;background:var(--card)}
+  thead th{
+    text-align:left;font-weight:500;font-size:11px;letter-spacing:.1em;color:var(--ink3);
+    padding:11px 14px;border-bottom:1px solid var(--line2);text-transform:uppercase;background:#FBFAF7;
+  }
+  tbody td{padding:13px 14px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink2);line-height:1.7}
+  tbody td:first-child{color:var(--ink);font-weight:500}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:#FCFBF8}
+
+  .pill{display:inline-block;font-size:11px;line-height:1;padding:4px 8px;border-radius:999px;white-space:nowrap;font-weight:500;letter-spacing:.03em}
+  .ok{background:var(--green-soft);color:var(--green)}
+  .warnp{background:var(--amber-soft);color:var(--amber)}
+  .no{background:var(--red-soft);color:var(--red)}
+  .info{background:var(--indigo-soft);color:var(--indigo)}
+
+  code{font-family:var(--mono);font-size:12.5px;background:#EFEDE6;padding:1.5px 5px;border-radius:4px;color:#3A3A46}
+  pre{background:#1B1C22;color:#E8E6DE;padding:18px 20px;border-radius:10px;overflow-x:auto;margin:14px 0;font-size:12.5px;line-height:1.7}
+  pre code{background:none;padding:0;color:inherit;font-size:12.5px}
+  .comment{color:#8B8B7A}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px}
+  .box .tag{font-size:10.5px;letter-spacing:.14em;color:var(--ink3);text-transform:uppercase;margin-bottom:8px}
+  .box .big{font-family:var(--serif);font-size:30px;line-height:1.2;color:var(--indigo);margin-bottom:4px}
+  .box .big small{font-size:13px;color:var(--ink3);font-family:var(--sans)}
+  .box p{font-size:13px;margin:4px 0}
+
+  .chain{display:flex;align-items:stretch;gap:0;margin:18px 0;flex-wrap:wrap}
+  .chain .node{flex:1;min-width:150px;background:var(--card);border:1px solid var(--line);padding:14px 14px;position:relative}
+  .chain .node:first-child{border-radius:10px 0 0 10px}
+  .chain .node:last-child{border-radius:0 10px 10px 0}
+  .chain .node b{display:block;font-size:13px;color:var(--ink);margin-bottom:3px}
+  .chain .node span{font-size:11.5px;color:var(--ink3);line-height:1.5;display:block}
+  .chain .node.bad{background:var(--red-soft);border-color:#E6C9C5}
+
+  .score td:first-child{width:34%}
+  .score .bar{height:5px;background:#EDEAE1;border-radius:3px;overflow:hidden;margin-top:6px}
+  .score .bar i{display:block;height:100%;background:var(--indigo)}
+
+  footer{margin-top:90px;padding-top:26px;border-top:1px solid var(--line);font-size:12px;color:var(--ink3);line-height:1.9}
+
+  @media (max-width:820px){
+    .wrap{padding:48px 20px 80px}
+    h1{font-size:34px}
+    .grid2,.grid3{grid-template-columns:1fr}
+    .chain{flex-direction:column}
+    .chain .node{border-radius:10px!important}
+    table{font-size:12.5px}
+    thead th,tbody td{padding:10px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">内部方案 · 2026-11-25 · v1.0</div>
+  <h1>BreezeBlue × 夜谈<br><em>语音接入与验收方案</em></h1>
+  <p class="lede">在现有 AstrBot 上把文字回复按概率换成 BreezeBlue 语音，同时评估 <code>voc_8yud7hz7c9q2</code> 是否适合作为夜谈的角色声音。核心原则：不改模型、人设、记忆和 QQ 连接；没验证的环节不写成已验证。</p>
+  <div class="meta">
+    <span><b>目标音色</b> voc_8yud7hz7c9q2</span>
+    <span><b>触发</b> 70% 文字 / 30% 语音</span>
+    <span><b>插件</b> astrbot_plugin_breezeblue_voice v0.2.0</span>
+    <span><b>状态</b> 代码就绪，部署环境未接入</span>
+  </div>
+
+  <nav class="toc">
+    <a href="#conclusion">结论</a>
+    <a href="#checked">核查结果</a>
+    <a href="#blocker">部署卡点</a>
+    <a href="#plugin">插件改动</a>
+    <a href="#api">接口对齐</a>
+    <a href="#cost">测试用量</a>
+    <a href="#gates">执行门槛</a>
+    <a href="#ratio">随机 70/30</a>
+    <a href="#rollback">备份与回退</a>
+    <a href="#nighttalk">夜谈音色诊断</a>
+    <a href="#fit">音色适配判定</a>
+    <a href="#roadmap">夜谈路线</a>
+    <a href="#unverified">未验证清单</a>
+  </nav>
+
+  <!-- 1 -->
+  <section id="conclusion">
+    <div class="sec-head"><span class="num">01</span><h2>先说结论</h2></div>
+    <p class="sec-sub">三句话说完现在能做什么、不能做什么。</p>
+
+    <div class="grid3">
+      <div class="box">
+        <div class="tag">已经做完</div>
+        <div class="big">v0.2.0</div>
+        <p>插件按官方 OpenAPI 对齐，修补了双份合成、跨容器音频、指令回执三个隐患。语法与配置已校验。</p>
+      </div>
+      <div class="box">
+        <div class="tag">现在卡住</div>
+        <div class="big">0 台</div>
+        <p>本机没有 AstrBot、没有 Docker、没有远程入口。框架版本、适配器、现有语音插件都无法读取。</p>
+      </div>
+      <div class="box">
+        <div class="tag">音色判断</div>
+        <div class="big">待试听</div>
+        <p>没有 API Key 无法查询该 Voice 的元数据，也无法生成音频。任何“适配/不适配”的结论现在都是猜的。</p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="t">关于“附带的 Skill”</div>
+      <p>本轮消息里没有附带的 Skill 文件，本机也没有安装 BreezeBlue 相关技能。我实际读的是：官方文档站、官方 <code>openapi.json</code>、AstrBot 当前源码，以及上一轮生成在本机的插件目录。如果你指的是另一个会话里的 Skill，把文件或路径给我，我再对齐一次。</p>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section id="checked">
+    <div class="sec-head"><span class="num">02</span><h2>我实际核查了什么</h2></div>
+    <p class="sec-sub">每条结论都标了证据来源；没证据的放在“未验证”。</p>
+
+    <table>
+      <thead><tr><th style="width:24%">核查项</th><th style="width:14%">结果</th><th>证据 / 说明</th></tr></thead>
+      <tbody>
+        <tr><td>官方文档可访问</td><td><span class="pill ok">已核实</span></td><td><code>docs.breezeblue.ai</code> 返回 200；文档索引与 <code>openapi.json</code> 均可读取，最近更新 2026-11-24。</td></tr>
+        <tr><td>语音接口协议</td><td><span class="pill ok">已核实</span></td><td><code>POST https://api.breeze.blue/v1/text-to-speech/{voice_id}</code>，请求头 <code>xi-api-key</code>，<code>delivery=sync|async</code>，<code>output_format</code> 含 <code>wav_24000</code>。</td></tr>
+        <tr><td>表现力参数</td><td><span class="pill ok">已核实</span></td><td>请求体支持 <code>instructions</code>（自然语言表演指令）与 <code>voice_settings.speed / guidance_scale / use_speaker_boost</code>；speed 变调不变音。</td></tr>
+        <tr><td>计费规则</td><td><span class="pill ok">已核实</span></td><td>10 billable units = 1 credit；中日韩字符每字 2 units，其余 1 unit；$3 / 10,000 credits，折合 $30 / 100 万字符。</td></tr>
+        <tr><td>Voice ID 归属与元数据</td><td><span class="pill no">未核实</span></td><td>无 Key 访问 <code>/v1/voices/{id}</code> 返回 401 <code>AUTH_REQUIRED</code>。必须带 Key 才能确认该音色属于你的账号、语言、性别、年龄、tone。</td></tr>
+        <tr><td>本机是否有 AstrBot</td><td><span class="pill no">未核实</span></td><td>全盘未找到 AstrBot 目录；无 Docker 容器；<code>ps</code> 被系统权限拦截。只有上一轮生成的插件源码。</td></tr>
+        <tr><td>AstrBot 钩子行为</td><td><span class="pill ok">已核实</span></td><td>当前源码：<code>on_decorating_result</code> 在发送前执行，按 priority 降序；内置 TTS 在该钩子之后；流式输出会在 TTS 前直接 return，并警告钩子可能失效。</td></tr>
+        <tr><td>Record 组件字段</td><td><span class="pill ok">已核实</span></td><td><code>Record(file, url, text)</code>；<code>text</code> 用作发送失败时的兜底文案，也会被别的 TTS 插件当正文读取。</td></tr>
+        <tr><td>QQ 适配器实际版本</td><td><span class="pill no">未核实</span></td><td>社区实测记录显示 <code>qq_official</code> 通过、<code>aiocqhttp</code>（NapCat / LLOneBot）保留代码路径但未实测；你的实例属于哪种未知。</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 3 -->
+  <section id="blocker">
+    <div class="sec-head"><span class="num">03</span><h2>部署环境卡点：需要部署者提供什么</h2></div>
+    <p class="sec-sub">我不需要你的密钥原文。下面 6 项里，前 5 项只读，第 6 项由你在群里执行。</p>
+
+    <table>
+      <thead><tr><th style="width:26%">需要的东西</th><th>具体形式</th><th style="width:22%">用途</th></tr></thead>
+      <tbody>
+        <tr><td>接入方式</td><td>SSH 主机 + 用户（密钥用你自己的 agent，不要贴聊天）；或 AstrBot WebUI 地址 + 一个临时只读账号；或明确“你只说步骤，我自己执行”。</td><td>决定我能直接改还是只能给补丁</td></tr>
+        <tr><td>部署形态</td><td><code>docker ps</code> 里 AstrBot 与 NapCat 是否同一容器；AstrBot 根目录路径；<code>data/</code> 是否有持久卷。</td><td>决定音频用本地路径还是 HTTP 文件服务</td></tr>
+        <tr><td>框架与适配器版本</td><td>WebUI 关于页截图，或 <code>python -c "import astrbot;print(astrbot.__version__)"</code>；平台适配器类型（aiocqhttp / qq_official）。</td><td>决定钩子与 Record 是否可用</td></tr>
+        <tr><td>现有语音插件清单</td><td><code>data/plugins/</code> 目录名 + 是否启用；尤其有没有 <code>astrbot_plugin_clonetts</code>、<code>astrbot_plugin_voice_input</code>。</td><td>避免同一句被两个插件各合成一次</td></tr>
+        <tr><td>关键开关状态</td><td>内置 TTS 是否启用、触发概率、<code>dual_output</code>；分段回复是否开启；流式输出是否开启；<code>callback_api_base</code> 是否配置。</td><td>决定实际语音比例和送达方式</td></tr>
+        <tr><td>测试群号</td><td>在测试群发 <code>/sid</code>，把返回里的 <code>default:GroupMessage:xxxx</code> 的 <code>xxxx</code> 给我；或直接说“就用这个群”，我来写进 <code>allowed_groups</code>。</td><td>把首测锁死在一个群</td></tr>
+      </tbody>
+    </table>
+
+    <p>如果部署者只能跑一条命令，跑这个（只读、不打印密钥、不改配置）：</p>
+<pre><code><span class="comment"># 在 AstrBot 所在机器 / 容器内</span>
+python3 tools/preflight.py /AstrBot
+
+<span class="comment"># 输出会包含：Python/ffmpeg、AstrBot 版本、适配器类型、</span>
+<span class="comment"># 已装插件（标出 TTS 相关与 clonetts）、内置 TTS 开关、</span>
+<span class="comment"># 分段回复、流式输出、callback_api_base 是否配置</span></code></pre>
+
+    <div class="callout warn">
+      <div class="t">密钥只走安全入口</div>
+      <p>API Key 只填在 AstrBot WebUI 的插件配置（界面已遮罩），或服务端环境变量 <code>BREEZE_API_KEY</code>。不要发在聊天、不要贴进群、不要写进命令历史、不要出现在日志。插件日志只打印状态码和字符数，不打印 Key。</p>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section id="plugin">
+    <div class="sec-head"><span class="num">04</span><h2>插件这一轮改了什么</h2></div>
+    <p class="sec-sub">不是“换个地址和 Key”，而是在发送前替换消息链。这轮修的都是会导致真实现场翻车的地方。</p>
+
+    <table>
+      <thead><tr><th style="width:26%">改动</th><th style="width:12%">版本</th><th>原因</th></tr></thead>
+      <tbody>
+        <tr><td>钩子 priority 0 → 100</td><td><span class="pill info">v0.2.0</span></td><td>社区 ADR 实测：clonetts 默认 priority 0，两个抽签器同序会导致同一句合成两次、花两份钱。priority 100 让我们先决定，后面的插件看到 Record 就跳过。</td></tr>
+        <tr><td>Record 的 text 置空串</td><td><span class="pill info">v0.2.0</span></td><td>别的 TTS 插件用 <code>hasattr(c,"text")</code> 收正文；<code>text=None</code> 会让它 <code>"".join([None])</code> 抛异常，原文又会被再合成一次。</td></tr>
+        <tr><td>只处理 LLM 结果</td><td><span class="pill info">v0.2.0</span></td><td><code>result.is_llm_result()</code> 为假时直接返回。指令回执、工具结果、错误提示不会被念出来。</td></tr>
+        <tr><td>新增 use_file_service</td><td><span class="pill info">v0.2.0</span></td><td>AstrBot 与 NapCat 分容器时，本地路径对方读不到。开启后走 AstrBot 文件服务换成 HTTP URL，与内置 TTS 的做法一致。</td></tr>
+        <tr><td>voice_settings 支持</td><td><span class="pill info">v0.2.0</span></td><td>新增 <code>speed</code>（保音高变速）、<code>guidance_scale</code>、<code>use_speaker_boost</code>。夜谈的“困倦/撒娇”可以靠 speed + instructions 调，不用播放端变调。</td></tr>
+        <tr><td>trigger_mode 真正生效</td><td><span class="pill info">v0.2.0</span></td><td>旧版配置项 <code>trigger_mode</code> 是死配置，代码只读 <code>only_explicit</code>。现在两者取或，UI 改了就生效。</td></tr>
+        <tr><td>管理员测试指令</td><td><span class="pill info">v0.2.0</span></td><td><code>/bbvoice test</code> 精确发测试句，<code>/bbvoice status</code> 看今日用量。仅管理员，且受 allowed_groups 与额度约束。</td></tr>
+        <tr><td>preflight 体检脚本</td><td><span class="pill info">v0.2.0</span></td><td>补上内置 TTS、分段、流式、callback_api_base、插件版本的只读检测。</td></tr>
+      </tbody>
+    </table>
+
+    <p>没动的部分：聊天模型、人设、记忆、QQ 连接、消息管线顺序。插件只挂在发送前一步，改的是 <code>result.chain</code>，不碰 Prompt、不碰会话存储。</p>
+  </section>
+
+  <!-- 5 -->
+  <section id="api">
+    <div class="sec-head"><span class="num">05</span><h2>与官方接口逐条对齐</h2></div>
+    <p class="sec-sub">以下字段来自官方 <code>openapi.json</code>，不是推测。</p>
+
+    <table>
+      <thead><tr><th style="width:22%">项目</th><th>官方值</th><th style="width:26%">插件当前</th></tr></thead>
+      <tbody>
+        <tr><td>Base URL</td><td><code>https://api.breeze.blue</code></td><td>默认一致，可配</td></tr>
+        <tr><td>鉴权</td><td><code>xi-api-key</code>（也支持 Bearer）</td><td><code>xi-api-key</code></td></tr>
+        <tr><td>路径</td><td><code>/v1/text-to-speech/{voice_id}</code></td><td>一致</td></tr>
+        <tr><td>必填</td><td><code>text</code></td><td>一致</td></tr>
+        <tr><td>可选</td><td><code>model_id</code> / <code>language_code</code>（2 位）/ <code>instructions</code> / <code>voice_settings</code></td><td>全部支持，language 默认 <code>zh</code></td></tr>
+        <tr><td>响应模式</td><td><code>delivery=sync</code> 返回音频；<code>async</code> 返回 202 任务</td><td>固定 sync；遇 202 回退文字</td></tr>
+        <tr><td>输出</td><td><code>wav_24000</code> 24 kHz / 16-bit / 单声道；也支持 mp3 多档</td><td>默认 wav_24000，mp3 自动转 wav</td></tr>
+        <tr><td>错误码</td><td>400 / 401 / 403 / 404 / 422 / 429 / 503 / 504</td><td>401/403 记鉴权失败；429 记限流；5xx 重试 1 次；其余回退文字</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout danger">
+      <div class="t">为什么不能“只改本地 TTS 的地址和 Key”</div>
+      <p>AstrBot 内置 TTS 走的是它自己的 Provider 抽象（OpenAI 风格 <code>/audio/speech</code> 或各家专用实现）。BreezeBlue 是 <code>xi-api-key</code> + 路径带 voice_id + <code>voice_settings</code> 的另一套协议，字段名、鉴权头、响应形态都不同。内置 Provider 不会因为改 <code>base_url</code> 就兼容。所以必须用插件在 <code>on_decorating_result</code> 里直接换 <code>Record</code>，绕开 Provider 层。</p>
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section id="cost">
+    <div class="sec-head"><span class="num">06</span><h2>先算测试用量，再发第一条</h2></div>
+    <p class="sec-sub">按官方计费规则逐字计算，不估算。</p>
+
+    <div class="grid2">
+      <div class="box">
+        <div class="tag">测试句</div>
+        <p style="font-size:15px;color:var(--ink);line-height:1.8">呜哇，被你发现啦! 我在认真思考呢，才没有摸鱼。</p>
+        <p style="margin-top:10px">清洗后 <b>24 字符</b>：19 个汉字 + 5 个非汉字（，! 空格 。）。</p>
+      </div>
+      <div class="box">
+        <div class="tag">计费</div>
+        <div class="big">4.3 <small>credits / 次</small></div>
+        <p>19×2 + 5×1 = <b>43 units</b>。重试 1 次最坏 8.6 credits。约 <b>1 分钱</b>。</p>
+      </div>
+    </div>
+
+    <table>
+      <thead><tr><th style="width:30%">场景</th><th>算法</th><th style="width:22%">结果</th></tr></thead>
+      <tbody>
+        <tr><td>本次测试（1 条）</td><td>24 字符 → 43 units</td><td>4.3 credits，约 5–6 秒音频</td></tr>
+        <tr><td>QQ 日常（30 条/日，平均 40 字）</td><td>40×2×30 = 2,400 units</td><td>240 credits/日；免费档每日 400 够</td></tr>
+        <tr><td>夜谈 30% 语音（200 条回复/日）</td><td>60 条 × 8 credits</td><td>480 credits/日 ≈ 14,400/月</td></tr>
+        <tr><td>月度成本（按 $3/万）</td><td>14,400 ÷ 10,000 × $3</td><td>约 $4.3/月</td></tr>
+        <tr><td>免费档边界</td><td>400 credits/日，需手动领取</td><td>约 50 条 40 字语音/日；不含商用授权</td></tr>
+      </tbody>
+    </table>
+
+    <p>测试期间把 <code>daily_limit_global</code> 设为 <b>1</b>，确保只发一条；通过后再恢复 30。额度是“先占后扣、失败退还”，不会因为超时白扣。</p>
+  </section>
+
+  <!-- 7 -->
+  <section id="gates">
+    <div class="sec-head"><span class="num">07</span><h2>执行顺序：五个门槛，逐级放行</h2></div>
+    <p class="sec-sub">每一级都有明确的通过标准；上一级不过，不进下一级。</p>
+
+    <table>
+      <thead><tr><th style="width:8%">门槛</th><th style="width:26%">做什么</th><th>通过标准</th><th style="width:12%">状态</th></tr></thead>
+      <tbody>
+        <tr><td>G0</td><td>只读体检：跑 preflight，确认版本/适配器/插件/开关</td><td>拿到输出；确认没有第二个 TTS 插件抢钩子；记录回退点</td><td><span class="pill no">待部署者</span></td></tr>
+        <tr><td>G1</td><td>只验音频生成：<code>tools/test_api.py --voices</code> 与默认合成</td><td>Voice 元数据存在且语言为 zh；HTTP 200；时长 &gt;1s；本地能听到人声</td><td><span class="pill no">待 Key</span></td></tr>
+        <tr><td>G2</td><td>只验 QQ 送达：测试群 + <code>/bbvoice test</code>，额度设 1</td><td>群里只出现 1 条语音、没有重复文字、没有第二条</td><td><span class="pill no">待群号</span></td></tr>
+        <tr><td>G3</td><td>双端播放：手机 QQ + 电脑 QQ 各播一遍</td><td>两端都能播、波形/时长正确、无杂音/变速</td><td><span class="pill no">待 G2</span></td></tr>
+        <tr><td>G4</td><td>恢复常态：30% 概率、额度 30、放开群</td><td>连续 20 条回复里语音占比接近 30%，无重复、失败全回退文字</td><td><span class="pill no">待 G3</span></td></tr>
+      </tbody>
+    </table>
+
+    <h3>G1 的具体命令</h3>
+<pre><code><span class="comment"># 不要把 Key 写在命令行里，用 read -s 读进环境变量</span>
+read -s BREEZE_API_KEY; export BREEZE_API_KEY
+
+python3 tools/test_api.py --voices   <span class="comment"># 查 Voice 是否存在 + 看语言/性别/年龄/tone</span>
+python3 tools/test_api.py            <span class="comment"># 合成 breeze_test.wav</span>
+ffprobe -v error -show_entries format=duration -of default=nw=1 breeze_test.wav</code></pre>
+
+    <h3>G2 的发送确认</h3>
+    <p>我不会替你发。你确认群号后，由你在群里执行 <code>/bbvoice test</code>（或授权部署者执行一次）。这条指令只发一条、只发测试句、只发给当前会话，且受 <code>allowed_groups</code> 拦截。发送前请把 <code>daily_limit_global</code> 设为 1，避免误触其他消息。</p>
+  </section>
+
+  <!-- 8 -->
+  <section id="ratio">
+    <div class="sec-head"><span class="num">08</span><h2>随机 70% 文字 / 30% 语音的真实行为</h2></div>
+    <p class="sec-sub">“30%”是每条回复独立抽签，不是每 10 条固定 3 条。另有三个因素会把实际比例压低或抬高。</p>
+
+    <table>
+      <thead><tr><th style="width:26%">机制</th><th>行为</th><th style="width:24%">对比例的影响</th></tr></thead>
+      <tbody>
+        <tr><td>独立抽签</td><td>每条 LLM 回复 <code>random() &lt; 0.3</code> 才转语音</td><td>20 条样本可能只有 3 条，也可能 9 条，属正常波动</td></tr>
+        <tr><td>会话冷却</td><td>同一会话两条语音最小间隔 90 秒</td><td>群聊密集时实际比例会明显低于 30%</td></tr>
+        <tr><td>明确索要</td><td>命中“发语音 / 语音说 / 说给我听”等关键词</td><td>跳过概率与冷却，100% 语音，会拉高比例</td></tr>
+        <tr><td>长度与媒体</td><td>超过 60 字、超过 3 行、含图片/视频/文件</td><td>直接保留文字，拉低比例</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout warn">
+      <div class="t">想真正接近 30%，把冷却调到 45 秒</div>
+      <p>按平均 20 秒一条回复估算，90 秒冷却把上限压到约 18%（20 ÷ 110）；45 秒冷却约 31%。建议群里先用 45 秒，私聊用 0（私聊节奏慢，不需要冷却）。这个值在 WebUI 里改，改完即生效。</p>
+    </div>
+
+    <p>不需要任何 <code>/语音</code> 指令。用户正常聊天即可；明确说“发语音”只是加速通道，不是开关。指令回执、工具消息、错误提示一律不转语音。</p>
+  </section>
+
+  <!-- 9 -->
+  <section id="rollback">
+    <div class="sec-head"><span class="num">09</span><h2>备份、启用、停用、回退</h2></div>
+    <p class="sec-sub">改动前先备份；停用要秒级；回退不碰模型、人设、记忆。</p>
+
+    <h3>改动前备份（在 AstrBot 机器上）</h3>
+<pre><code>cd /path/to/AstrBot
+ts=$(date +%F-%H%M)
+tar czf ~/astrbot-bb-backup-$ts.tgz \
+  data/config/astrbot_plugin_breezeblue_voice_config.json \
+  data/plugin_data/astrbot_plugin_breezeblue_voice \
+  data/plugins/astrbot_plugin_breezeblue_voice 2&gt;/dev/null
+ls -lh ~/astrbot-bb-backup-$ts.tgz
+<span class="comment"># 原有 data/config 里的模型/人设/平台配置本插件只读不写，不必进备份</span></code></pre>
+
+    <table>
+      <thead><tr><th style="width:22%">操作</th><th>做法</th><th style="width:26%">生效时间</th></tr></thead>
+      <tbody>
+        <tr><td>启用</td><td>WebUI → 插件 → 填 <code>api_key</code>、确认 <code>voice_id</code>、<code>voice_ratio=0.3</code>、<code>allowed_groups</code> 先留测试群</td><td>保存即生效，无需重启</td></tr>
+        <tr><td>临时停用（推荐）</td><td><code>enabled=false</code>，插件仍在，只是不再替换</td><td>秒级</td></tr>
+        <tr><td>彻底停用</td><td>WebUI 插件页 → 停用；或移出 <code>data/plugins/</code> 后重载</td><td>重载后</td></tr>
+        <tr><td>回退到改动前</td><td>删插件目录与插件配置 → 重载/重启容器</td><td>1 分钟内</td></tr>
+      </tbody>
+    </table>
+
+<pre><code><span class="comment"># 回退（确认备份存在后再执行）</span>
+rm -rf data/plugins/astrbot_plugin_breezeblue_voice
+rm -f  data/config/astrbot_plugin_breezeblue_voice_config.json
+docker restart astrbot   <span class="comment"># 或 WebUI 重载插件</span>
+
+<span class="comment"># 需要恢复数据时</span>
+tar xzf ~/astrbot-bb-backup-$ts.tgz -C /path/to/AstrBot</code></pre>
+
+    <p>回退后模型、人设、记忆、QQ 连接都不需要重建：它们不在本插件的写入范围内。</p>
+  </section>
+
+  <!-- 10 -->
+  <section id="nighttalk">
+    <div class="sec-head"><span class="num">10</span><h2>夜谈的音色为什么“还是不行”</h2></div>
+    <p class="sec-sub">先定位问题，再判断新音色能不能解决。否则换十个音色还是同样的毛病。</p>
+
+    <div class="chain">
+      <div class="node"><b>本地 edge-tts</b><span>Mac 127.0.0.1:9880<br>8 个基础音色</span></div>
+      <div class="node bad"><b>播放端变调</b><span>14 个 VoiceKind 靠 pitch 派生<br>共振峰不跟着变</span></div>
+      <div class="node"><b>Azure</b><span>SSML 内做音高/语速<br>配置了才走</span></div>
+      <div class="node bad"><b>腾讯云 16 kHz</b><span>窄带 mp3<br>仍二次变调</span></div>
+      <div class="node"><b>系统 TTS</b><span>离线兜底<br>机械感明显</span></div>
+    </div>
+
+    <h3>三个真正拉低听感的地方</h3>
+    <table>
+      <thead><tr><th style="width:30%">问题</th><th>机制</th><th style="width:30%">表现</th></tr></thead>
+      <tbody>
+        <tr><td>变调代替音色</td><td>14 个音色只映射到 8 个基础音色，其余靠 <code>PitchedAudioPlayer</code> 移调。移调只改基频，不改共振峰，人耳会听成“同一个人捏着嗓子”。</td><td>甜美女童 +50Hz、磁性大叔 −40Hz 最容易露馅</td></tr>
+        <tr><td>16 kHz 窄带</td><td>腾讯云链路 <code>SampleRate: 16000</code>、mp3。齿音和气息被切掉，低频发闷。</td><td>像电话里的声音，不像贴着耳朵说话</td></tr>
+        <tr><td>没有表演控制</td><td>文本直接送 TTS，情绪只存在于文案里。TTS 不知道这句是撒娇还是困倦。</td><td>同一句话永远同一个语气，长聊会“念稿感”</td></tr>
+      </tbody>
+    </table>
+
+    <p>这三点里，前两点是<strong>工程问题</strong>，换音色之前就该修；第三点是<strong>能力问题</strong>，恰好是 BreezeBlue 的 <code>instructions</code> 想解决的。</p>
+
+    <div class="callout">
+      <div class="t">BreezeBlue 对夜谈的结构性价值</div>
+      <p>原生 24 kHz 单声道；<code>speed</code> 变速保音高，不需要播放端移调；<code>instructions</code> 用自然语言给表演方向（“年轻女声，轻一点，像临睡前贴着耳朵说话”）；<code>guidance_scale</code> 控制贴程度。这四点是现有 edge-tts + 变调链路给不了的。</p>
+    </div>
+  </section>
+
+  <!-- 11 -->
+  <section id="fit">
+    <div class="sec-head"><span class="num">11</span><h2>voc_8yud7hz7c9q2 是否适配夜谈</h2></div>
+    <p class="sec-sub">现在不能下结论。能下的是判定标准和试听方法；听完按表打分，结论自然出来。</p>
+
+    <div class="callout danger">
+      <div class="t">为什么不能现在判断</div>
+      <p>没有 Key，查不到这个 Voice 的 <code>language_code / gender / age / tone / accent</code>，也生成不了样音。仅凭 ID 猜性别、年龄、音色是耍流氓。任何“听起来应该不错”的说法都不作数。</p>
+    </div>
+
+    <h3>夜谈需要什么样的声音</h3>
+    <p>夜谈是睡前陪伴场景，不是播客也不是客服。权重按这个场景定：</p>
+
+    <table class="score">
+      <thead><tr><th>维度</th><th style="width:10%">权重</th><th>判断点</th><th style="width:16%">及格线</th></tr></thead>
+      <tbody>
+        <tr><td>音色本体</td><td>25</td><td>性别、年龄、气质是否贴主推角色；是否“像一个具体的人”而不是播音员</td><td>年轻女声 / 温润或清冷</td></tr>
+        <tr><td>亲密距离感</td><td>20</td><td>有没有气声、软起音；会不会太亮、太冲、太“营业”</td><td>像贴着耳朵说话</td></tr>
+        <tr><td>情绪可塑性</td><td>20</td><td>同一句能否演出撒娇、困倦、吃醋、安慰四种状态</td><td>四种可分辨，不崩</td></tr>
+        <tr><td>普通话与咬字</td><td>15</td><td>是否标准普通话；有无方言尾音；轻声/儿化是否自然</td><td>无口音，吐字清楚</td></tr>
+        <tr><td>低音量外放</td><td>10</td><td>手机外放 30% 音量，夜里听是否清楚、是否刺耳</td><td>字字可辨，不炸耳</td></tr>
+        <tr><td>稳定性与延迟</td><td>10</td><td>20 句里有没有破音、漏字、突然变速；首字节到出声多久</td><td>无明显故障，&lt;2s</td></tr>
+      </tbody>
+    </table>
+
+    <p><strong>判定：</strong>≥80 分进 P1；65–79 分只用于长音频/高光时刻；&lt;65 分不进 App，只留在 QQ 侧。这组阈值先定死，避免听完“感觉还行”就上。</p>
+
+    <h3>盲测流程（30 分钟）</h3>
+    <ol>
+      <li>准备三条链路：BreezeBlue <code>voc_8yud7hz7c9q2</code>、夜谈当前线上音色（本地 edge-tts 或 Azure）、系统 TTS。</li>
+      <li>同一组 6 句台词，三条链路各生成一遍，文件重命名成 A/B/C 打乱顺序，不看来源。</li>
+      <li>先手机外放 30% 音量听一遍，再戴耳机听一遍；每次只记分，不猜是谁。</li>
+      <li>找 2 个不知情的人各听一遍，取平均分。自己听容易先入为主。</li>
+    </ol>
+
+    <table>
+      <thead><tr><th style="width:8%">#</th><th>台词</th><th style="width:26%">考什么</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>呜哇，被你发现啦! 我在认真思考呢，才没有摸鱼。</td><td>轻快、上扬、气声</td></tr>
+        <tr><td>2</td><td>你今天怎么这么晚才回来，我等你好久了。</td><td>埋怨但不凶，尾音软</td></tr>
+        <tr><td>3</td><td>别闹了……我困了，你抱着我说会儿话好不好。</td><td>困倦、低音量、拖音</td></tr>
+        <tr><td>4</td><td>哼，我才没有吃醋，你爱跟谁聊跟谁聊。</td><td>口是心非，重音位置</td></tr>
+        <tr><td>5</td><td>没事的，慢慢来，我一直在这儿。</td><td>安慰，语速放慢</td></tr>
+        <tr><td>6</td><td>（笑）你这个笨蛋，连这个都记不住。</td><td>笑声、亲昵、不刻薄</td></tr>
+      </tbody>
+    </table>
+
+    <p>第 3、4、6 句是分水岭。多数 TTS 能把第 1 句念好，但一到“困倦”“口是心非”“带笑的骂”就露出念稿感。如果这三句也能过，这个音色才值得进夜谈。</p>
+
+    <h3>如果音色不合适，怎么换</h3>
+    <p>不要直接换 ID 硬试。先按第 10 节修工程问题（去掉播放端移调、换 24 kHz），再用 <code>tools/audition.py</code> 按 gender / age / tone 筛候选，preview 不计费，选定 5 个候选再用同一句付费对比（5 × 24 字符 ≈ 21.5 credits）。</p>
+  </section>
+
+  <!-- 12 -->
+  <section id="roadmap">
+    <div class="sec-head"><span class="num">12</span><h2>夜谈接入路线</h2></div>
+    <p class="sec-sub">QQ 和 App 用同一个音色，角色在两个端听起来才是同一个人。但通话和语音条要走不同引擎。</p>
+
+    <table>
+      <thead><tr><th style="width:10%">阶段</th><th style="width:30%">做什么</th><th>产出 / 门槛</th><th style="width:12%">成本</th></tr></thead>
+      <tbody>
+        <tr><td>P0</td><td>试听与盲测，不改代码</td><td>6 句 × 3 链路，评分表；决定“进/不进”</td><td>&lt; 10 credits</td></tr>
+        <tr><td>P1</td><td>AstrBot QQ 侧上线，测试群灰度</td><td>30% 语音、额度 30、失败回退文字；G0–G4 全过</td><td>约 $4/月</td></tr>
+        <tr><td>P2</td><td>夜谈 App 加 <code>BreezeVoiceClient</code>，只给 1 个主推角色</td><td>语音条按需合成，缓存 + 日预算；通话仍走本地/Azure</td><td>按用量</td></tr>
+        <tr><td>P3</td><td>角色音色库 + 表演预设</td><td>每个角色一个 voice_id + 一套 instructions（撒娇/困倦/安慰/调侃）</td><td>按用量</td></tr>
+      </tbody>
+    </table>
+
+    <h3>P2 的工程边界</h3>
+    <ul>
+      <li>新增 <code>Core/Voice/BreezeVoiceClient.swift</code>，签名与现有 <code>TencentTTSClient.synthesize(text:kind:)</code> 对齐，不改 <code>VoiceService</code> 的调用方。</li>
+      <li>Key 存 Keychain，与现有 <code>LocalSecrets</code> 一致；不进 UserDefaults、不进日志、不进崩溃上报。</li>
+      <li>角色模型加可选 <code>breezeVoiceID</code>；为空就走现有链路，零迁移成本。</li>
+      <li><strong>只在“点语音条播放”时调用</strong>，不在每条回复后自动合成。通话要的是低延迟，云端表达型 TTS 不适合实时对话。</li>
+      <li>日预算 + 失败回退：超预算、超时、401/429 一律回退现有音色，不弹错、不静默失败。</li>
+    </ul>
+
+    <div class="callout">
+      <div class="t">为什么通话不换</div>
+      <p>通话是“说完就要接上”，云端同步合成 1–3 秒的等待会直接破坏节奏。现有本地 edge-tts 首字节更快，虽然音色差，但通话体验优先。把 BreezeBlue 放在“语音条/高光时刻/分享”这类可以等的场景，收益最大、风险最小。</p>
+    </div>
+  </section>
+
+  <!-- 13 -->
+  <section id="unverified">
+    <div class="sec-head"><span class="num">13</span><h2>仍未验证的环节</h2></div>
+    <p class="sec-sub">这些不写进“已完成”。每一条都给了验证方式。</p>
+
+    <table>
+      <thead><tr><th style="width:34%">未验证</th><th>怎么验</th><th style="width:18%">卡在谁</th></tr></thead>
+      <tbody>
+        <tr><td>Voice ID 是否属于你的账号</td><td><code>test_api.py --voices</code> 看返回里有没有该 ID 与元数据</td><td>需要 Key</td></tr>
+        <tr><td>AstrBot 具体版本 / 适配器</td><td>preflight 输出 + WebUI 关于页</td><td>需要部署者</td></tr>
+        <tr><td>是否已有 clonetts 等 TTS 插件</td><td>preflight 的插件清单，看是否标“会抢同一钩子”</td><td>需要部署者</td></tr>
+        <tr><td>流式输出是否开启</td><td>preflight；若开启，钩子可能拿不到完整消息链，需关流式或接受不转语音</td><td>需要部署者</td></tr>
+        <tr><td>aiocqhttp / NapCat 能否发 24 kHz WAV</td><td>G2 实发一条，看群里是否可播、时长是否正确</td><td>需要测试群</td></tr>
+        <tr><td>NapCat 是否转码成 AMR/SILK</td><td>同一文件本地播 vs QQ 里播对比；闷则改 <code>mp3_24000_160</code></td><td>需要 G2</td></tr>
+        <tr><td>手机与电脑完整播放</td><td>G3 两端各播一遍，记录机型/客户端版本</td><td>需要你</td></tr>
+        <tr><td>群内风控 / 限流</td><td>连续 20 条观察是否被折叠、禁言、降速</td><td>需要 G4</td></tr>
+        <tr><td>真实音色听感与适配度</td><td>第 11 节盲测评分</td><td>需要 Key + 3 位听者</td></tr>
+        <tr><td>计费单价与税</td><td>官方标价 $3/万 credits；实际账单以你的订阅页为准</td><td>需要账号</td></tr>
+        <tr><td>服务器时区</td><td><code>date</code> 是否为 Asia/Shanghai；跨日额度按本地日期算</td><td>需要部署者</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 14 -->
+  <section id="next">
+    <div class="sec-head"><span class="num">14</span><h2>下一步只需要你做三件事</h2></div>
+    <p class="sec-sub">不用一次给全，按顺序即可。</p>
+
+    <div class="grid3">
+      <div class="box">
+        <div class="tag">1</div>
+        <h3 style="margin-top:0">给接入方式</h3>
+        <p>SSH / WebUI / 或“我只按步骤自己执行”。给到哪一层，我就做到哪一层。</p>
+      </div>
+      <div class="box">
+        <div class="tag">2</div>
+        <h3 style="margin-top:0">给测试群号</h3>
+        <p>群里发 <code>/sid</code>，把 <code>GroupMessage:</code> 后面的数字给我。我只写进配置，不主动发。</p>
+      </div>
+      <div class="box">
+        <div class="tag">3</div>
+        <h3 style="margin-top:0">确认发一条</h3>
+        <p>额度设 1，你在群里执行 <code>/bbvoice test</code>。这一条就是那句“呜哇，被你发现啦”。</p>
+      </div>
+    </div>
+
+    <p style="margin-top:22px">这三件齐了，G1–G3 一次跑完；音色试听可以并行做，不依赖 AstrBot。</p>
+  </section>
+
+  <footer>
+    <p>文档：<code>docs/breezeblue-voice-plan.html</code>　插件：<code>astrbot_plugin_breezeblue_voice/</code> v0.2.0　体检：<code>tools/preflight.py</code></p>
+    <p>事实来源：BreezeBlue 官方文档站与 <code>openapi.json</code>（2026-11-24 更新）、AstrBot 官方仓库当前源码（最新 release v4.30.0-beta.1，2026-11-18）、本机夜谈源码、本机插件源码。未标注“已核实”的内容均为待验证。</p>
+  </footer>
+
+</div>
+</body>
+</html>

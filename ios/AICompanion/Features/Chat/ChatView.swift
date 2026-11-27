@@ -23,6 +23,34 @@ struct ChatView: View {
             if model == nil {
                 model = store.makeChatModel(for: character)
             }
+            // 自测辅助：`-SeedLore` 给当前角色写一条世界设定，用于验证「提到才注入」
+            if CommandLine.arguments.contains("-SeedLorePaint") {
+                LoreStore.shared.upsert(LoreEntry(
+                    characterID: character.id,
+                    title: "画画",
+                    keys: ["画画", "绘画", "画", "水墨"],
+                    content: "纳兰铮喜欢画画，画的是水墨山水，这是她少有的真心爱好。",
+                    priority: 2
+                ))
+            }
+            if CommandLine.arguments.contains("-SeedLoreStrong") {
+                LoreStore.shared.upsert(LoreEntry(
+                    characterID: character.id,
+                    title: "心理咨询师",
+                    keys: ["心理咨询", "心理咨询师", "工作", "职业"],
+                    content: "她现在是执业心理咨询师，这是她真正在做的事。",
+                    priority: 2
+                ))
+            }
+            if CommandLine.arguments.contains("-SeedLore") {
+                LoreStore.shared.upsert(LoreEntry(
+                    characterID: character.id,
+                    title: "师门",
+                    keys: ["昆仑", "师门"],
+                    content: "师门在昆仑山，门规不许弟子下山惹事。",
+                    priority: 2
+                ))
+            }
             // 演示辅助：`simctl launch ... -DemoSend` 自动发送一条消息，验证流式输出
             if let index = CommandLine.arguments.firstIndex(of: "-DemoSend"),
                index + 1 < CommandLine.arguments.count {
@@ -47,9 +75,12 @@ private struct ChatScreen: View {
     @State private var showPrompts = false
     /// 默认静音：回复不自动朗读（云端合成按字符计费），点播放键才发声；用户选择持久化
     @AppStorage("chat.muted") private var isMuted = true
-    @FocusState private var inputFocused: Bool
     /// 兜底重建输入框用：极少数情况下 TextField 内部文本没跟绑定同步，重建一次必然清空
-    @State private var inputEpoch = 0
+    /// 输入框清空/聚焦信号：直接作用在 UIKit 控件上，避免重建控件导致键盘抖动
+    @State private var showTrace = false
+    @State private var showLore = false
+    @State private var clearSignal = 0
+    @State private var focusSignal = 0
 
     private var character: Character { model.character }
     private var isSpeakingNow: Bool { voice.speakingID == character.id }
@@ -74,6 +105,14 @@ private struct ChatScreen: View {
                     .zIndex(8)
             }
         }
+        .sheet(isPresented: $showLore) {
+            LoreEditorView(characterID: character.id)
+        }
+        .sheet(isPresented: $showTrace) {
+            PromptTraceView()
+                .presentationDetents([.medium, .large])
+                .presentationBackground(Color(hex: 0x12121C))
+        }
         .sheet(isPresented: $showPrompts) {
             PromptSheet(
                 character: character,
@@ -81,7 +120,7 @@ private struct ChatScreen: View {
             ) { suggestion in
                 model.input += suggestion
                 showPrompts = false
-                inputFocused = true
+                focusSignal += 1
             }
             .presentationDetents([.height(400)])
             .presentationDragIndicator(.visible)
@@ -104,7 +143,7 @@ private struct ChatScreen: View {
         .onChange(of: model.isStreaming) { _, finished in
             guard finished, !isMuted, !CallCenter.shared.isActive, !Task.isCancelled else { return }
             if let last = model.messages.last, last.role == .assistant, !last.failed, !last.text.isEmpty {
-                voice.speak(last.text, for: character)
+                voice.speak(last.text, for: character, allowBreeze: false)
             }
         }
         .onChange(of: isMuted) { _, muted in
@@ -112,7 +151,7 @@ private struct ChatScreen: View {
                 voice.stop()
             } else if let last = model.messages.last, last.role == .assistant, !last.failed, !last.text.isEmpty {
                 // 打开声音的那一刻立刻能听到：直接播最新一条回复
-                voice.speak(last.text, for: character)
+                voice.speak(last.text, for: character, allowBreeze: false)
             }
         }
         // 合成/播放失败不再静默：把原因弹出来，方便真机上定位
@@ -160,13 +199,33 @@ private struct ChatScreen: View {
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
                 .shadow(color: .black.opacity(0.6), radius: 4, y: 2)
+                // 长按标题看这一轮到底注入了什么（自测用，不影响用户）
+                .onLongPressGesture(minimumDuration: 0.8) {
+                    showTrace = true
+                }
             CircleIconButton(systemName: isMuted ? "speaker.slash" : (isSpeakingNow ? "speaker.wave.3" : "speaker.wave.2")) {
                 isMuted.toggle()
                 store.showToast(isMuted ? "已静音角色语音" : "已开启角色语音")
             }
-            CircleIconButton(systemName: "square.and.arrow.up") {
-                store.showToast("分享卡片即将上线")
+            Menu {
+                Button {
+                    showLore = true
+                } label: {
+                    Label("新增设定", systemImage: "book.closed")
+                }
+                Button {
+                    store.showToast("分享卡片即将上线")
+                } label: {
+                    Label("分享卡片", systemImage: "square.and.arrow.up")
+                }
+            } label: {
+                Image(systemName: "ellipsis")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 36, height: 36)
+                    .background(Color.black.opacity(0.35), in: Circle())
             }
+            .accessibilityLabel("更多")
         }
         .padding(.horizontal, 4)
     }
@@ -433,22 +492,15 @@ private struct ChatScreen: View {
     }
 
     private func clearSentText(_ sent: String) {
+        // 直接从 UIKit 层把文字置空，不重建控件——重建会让键盘重新布局，看起来就是抖一下
         model.input = ""
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) {
-            if model.input == sent { model.input = "" }
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-            if model.input == sent {
-                // 文本回写抢在绑定更新之后：重建输入框，确保不会留残句
-                model.input = ""
-                inputEpoch += 1
-            }
-        }
+        clearSignal += 1
     }
 
     private var inputBar: some View {
         HStack(spacing: 8) {
             Button {
+                guard AuthGate.shared.require() else { return }
                 CallCenter.shared.start(chatModel: model, userName: store.profile.nickname)
             } label: {
                 Image(systemName: "phone.fill")
@@ -460,14 +512,12 @@ private struct ChatScreen: View {
             .buttonStyle(.plain)
             .accessibilityLabel("语音通话")
 
-            TextField("", text: $model.input, prompt: Text("自由输入...").foregroundStyle(Palette.ink3))
-                .font(Typo.body(15))
-                .foregroundStyle(Palette.ink)
-                .focused($inputFocused)
-                .id(inputEpoch)
-                .submitLabel(.send)
-                .onSubmit { sendInput() }
-                .frame(minHeight: 40)
+            ChatInputField(text: $model.input,
+                           placeholder: "自由输入...",
+                           clearSignal: clearSignal,
+                           focusSignal: focusSignal,
+                           onSend: sendInput)
+                .frame(height: 40)
 
             Button {
                 showPrompts = true
@@ -674,5 +724,148 @@ private struct LevelUpOverlay: View {
         }
         .allowsHitTesting(false)
         .onAppear { rise = true }
+    }
+}
+
+
+// MARK: - 输入框（UIKit 支持，清空时不重建控件）
+
+private struct ChatInputField: UIViewRepresentable {
+    @Binding var text: String
+    var placeholder: String
+    var clearSignal: Int
+    var focusSignal: Int
+    var onSend: () -> Void
+
+    func makeUIView(context: Context) -> UITextField {
+        let field = UITextField()
+        field.delegate = context.coordinator
+        field.font = UIFont.systemFont(ofSize: 15)
+        field.textColor = UIColor(Palette.ink)
+        field.attributedPlaceholder = NSAttributedString(
+            string: placeholder,
+            attributes: [.foregroundColor: UIColor(Palette.ink3)]
+        )
+        field.returnKeyType = .send
+        field.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        field.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        field.addTarget(context.coordinator, action: #selector(Coordinator.changed(_:)),
+                        for: .editingChanged)
+        return field
+    }
+
+    func updateUIView(_ field: UITextField, context: Context) {
+        context.coordinator.parent = self
+
+        if context.coordinator.lastClear != clearSignal {
+            context.coordinator.lastClear = clearSignal
+            field.text = ""
+            text = ""
+        } else if field.text != text {
+            field.text = text
+        }
+
+        if context.coordinator.lastFocus != focusSignal {
+            context.coordinator.lastFocus = focusSignal
+            field.becomeFirstResponder()
+        }
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+
+    final class Coordinator: NSObject, UITextFieldDelegate {
+        var parent: ChatInputField
+        var lastClear: Int
+        var lastFocus: Int
+
+        init(_ parent: ChatInputField) {
+            self.parent = parent
+            lastClear = parent.clearSignal
+            lastFocus = parent.focusSignal
+        }
+
+        @objc func changed(_ field: UITextField) {
+            parent.text = field.text ?? ""
+        }
+
+        func textFieldShouldReturn(_ field: UITextField) -> Bool {
+            parent.onSend()
+            return false
+        }
+    }
+}
+
+
+// MARK: - 注入凭证（长按标题查看）
+
+private struct PromptTraceView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    private var trace: (time: String, lore: [String], memory: [String]) {
+        PromptTrace.snapshot
+    }
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section("时间锚") {
+                    Text(trace.time.isEmpty ? "（还没有发送过消息）" : trace.time)
+                        .font(Typo.body(12))
+                        .foregroundStyle(Palette.ink2)
+                }
+
+                Section {
+                    if trace.lore.isEmpty {
+                        Text("这一轮没有注入任何设定")
+                            .font(Typo.body(12))
+                            .foregroundStyle(Palette.ink3)
+                    } else {
+                        ForEach(trace.lore, id: \.self) { line in
+                            Text(line)
+                                .font(Typo.body(12))
+                                .foregroundStyle(Palette.ink2)
+                        }
+                    }
+                } header: {
+                    Text("世界书（\(trace.lore.count) 条）")
+                } footer: {
+                    Text("只有这句话提到关键词时，对应设定才会出现在这里。")
+                        .font(Typo.body(10))
+                }
+
+                Section {
+                    if trace.memory.isEmpty {
+                        Text("这一轮没有命中记忆")
+                            .font(Typo.body(12))
+                            .foregroundStyle(Palette.ink3)
+                    } else {
+                        ForEach(trace.memory, id: \.self) { line in
+                            Text(line)
+                                .font(Typo.body(12))
+                                .foregroundStyle(Palette.ink2)
+                        }
+                    }
+                } header: {
+                    Text("记忆（\(trace.memory.count) 条）")
+                } footer: {
+                    Text("这是上一轮请求实际带进模型的内容，不是推测。")
+                        .font(Typo.body(10))
+                }
+            }
+            .listStyle(.insetGrouped)
+            .scrollContentBackground(.hidden)
+            .background(Palette.canvas)
+            .navigationTitle("这一轮注入了什么")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("关闭") { dismiss() }
+                        .foregroundStyle(Palette.gold)
+                }
+            }
+        }
+        .preferredColorScheme(.dark)
     }
 }

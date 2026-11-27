@@ -25,6 +25,11 @@ struct VoiceSettingsView: View {
     @State private var azureMessage: String?
     @State private var azureTesting = false
     @State private var azurePreview: AVAudioPlayer?
+    @State private var breeze = BreezeVoiceSettings.shared
+    @State private var breezeKey = ""
+    @State private var breezeMessage: String?
+    @State private var breezeTesting = false
+    @State private var breezePreview: AVAudioPlayer?
 
     private var inputBackground: some View {
         RoundedRectangle(cornerRadius: Radius.sm, style: .continuous)
@@ -42,6 +47,7 @@ struct VoiceSettingsView: View {
             ScrollView {
                 VStack(spacing: 16) {
                     statusCard
+                    breezeCard
                     tencentCard
                     if azure.isConfigured { azureCard }
                     systemVoiceCard
@@ -70,7 +76,7 @@ struct VoiceSettingsView: View {
             HStack(spacing: 10) {
                 Image(systemName: "waveform.circle.fill")
                     .font(.system(size: 26))
-                    .foregroundStyle(voice.isLocalServerUp ? Palette.ok : Palette.goldDeep)
+                    .foregroundStyle(voice.isLocalServerUp || breeze.hasKey ? Palette.ok : Palette.goldDeep)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("语音引擎状态")
                         .font(Typo.body(15, weight: .semibold))
@@ -92,9 +98,11 @@ struct VoiceSettingsView: View {
                 .disabled(checking)
             }
 
-            Text(azure.isConfigured
-                 ? "四层引擎：Mac 本地服务 → Azure 云扬 → 腾讯云 → 设备内置（离线兜底）"
-                 : "三层引擎：Mac 本地服务 → 腾讯云（4G 可用）→ 设备内置（离线兜底）")
+            Text(breeze.hasKey && breeze.enabled
+                 ? "聊天语音条：BreezeBlue 角色音色（失败回退本地/云端）；通话：本地 → Azure → 腾讯 → 系统"
+                 : (azure.isConfigured
+                    ? "四层引擎：Mac 本地服务 → Azure 云扬 → 腾讯云 → 设备内置（离线兜底）"
+                    : "三层引擎：Mac 本地服务 → 腾讯云（4G 可用）→ 设备内置（离线兜底）"))
                 .font(Typo.body(11.5))
                 .foregroundStyle(Palette.ink2)
 
@@ -145,6 +153,9 @@ struct VoiceSettingsView: View {
     }
 
     private var statusText: String {
+        if breeze.hasKey && breeze.enabled {
+            return "聊天语音条优先 BreezeBlue · 最近播放：\(voice.lastEngine)"
+        }
         if voice.isLocalServerUp { return "高音质引擎已连接 · 当前 \(voice.lastEngine)" }
         if let error = voice.lastError, !error.isEmpty {
             return "云端合成失败，已降级为内置语音：\(error)"
@@ -295,7 +306,7 @@ struct VoiceSettingsView: View {
         txMessage = nil
         Task {
             do {
-                _ = try await TencentTTSClient.synthesize(text: "你好，我是你的智能体，这种声音你觉得如何？", kind: .warmFemale)
+                _ = try await TencentTTSClient.synthesize(text: "你好，我是你的角色，这种声音你觉得如何？", kind: .warmFemale)
                 txMessage = "✅ 云端语音已连通，蜂窝数据下也能正常播放"
             } catch {
                 txMessage = error.localizedDescription
@@ -305,6 +316,150 @@ struct VoiceSettingsView: View {
     }
 
     // MARK: Azure 神经语音（云扬）
+
+    private var breezeCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 10) {
+                Image(systemName: "waveform.circle.fill")
+                    .font(.system(size: 22))
+                    .foregroundStyle(breeze.hasKey ? Palette.ok : Palette.goldDeep)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("BreezeBlue 角色音色")
+                        .font(Typo.body(14.5, weight: .semibold))
+                        .foregroundStyle(Palette.ink)
+                    Text(breeze.hasKey
+                         ? "已配置 · 苏晚棠「迷糊版」、沈惊寒「幽巷引路人」；通话仍走本地"
+                         : "聊天语音条改用角色专属音色；通话仍走本地，不增加等待")
+                        .font(Typo.body(11))
+                        .foregroundStyle(Palette.ink3)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 0)
+            }
+
+            SecureField("", text: $breezeKey,
+                        prompt: Text(breeze.hasKey ? "Key（已保存，留空则不修改）" : "粘贴 BreezeBlue API Key（brz_...）")
+                            .foregroundStyle(Palette.ink3))
+                .textFieldStyle(.plain)
+                .font(Typo.body(13.5))
+                .foregroundStyle(Palette.ink)
+                .autocorrectionDisabled()
+                .textInputAutocapitalization(.never)
+                .padding(11)
+                .background(inputBackground)
+
+            Toggle(isOn: Binding(
+                get: { breeze.enabled },
+                set: { breeze.enabled = $0 }
+            )) {
+                Text("聊天语音条优先使用 BreezeBlue")
+                    .font(Typo.body(12.5))
+                    .foregroundStyle(Palette.ink2)
+            }
+            .tint(Palette.goldDeep)
+
+            HStack(spacing: 10) {
+                Button {
+                    saveAndTestBreeze()
+                } label: {
+                    HStack(spacing: 6) {
+                        if breezeTesting {
+                            ProgressView().controlSize(.small).tint(.white)
+                        }
+                        Text(breezeTesting ? "测试中…" : "保存并试听")
+                    }
+                    .font(Typo.body(13, weight: .medium))
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(
+                        RoundedRectangle(cornerRadius: Radius.sm, style: .continuous)
+                            .fill(breezeTesting ? Palette.ink3 : Palette.goldDeep)
+                    )
+                }
+                .buttonStyle(.plain)
+                .disabled(breezeTesting)
+
+                if breeze.hasKey {
+                    Button {
+                        breeze.clear()
+                        breezeKey = ""
+                        breezeMessage = "已清除 BreezeBlue Key"
+                    } label: {
+                        Text("清除")
+                            .font(Typo.body(13))
+                            .foregroundStyle(Palette.ink2)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 10)
+                            .background(
+                                RoundedRectangle(cornerRadius: Radius.sm, style: .continuous)
+                                    .stroke(Palette.line2, lineWidth: 1)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+
+            if let breezeMessage {
+                Text(breezeMessage)
+                    .font(Typo.body(11.5))
+                    .foregroundStyle(breezeMessage.hasPrefix("✅") ? Palette.ok : Palette.goldDeep)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            if let err = voice.lastBreezeError, !err.isEmpty {
+                Text("Breeze 最近一次失败：\(err)")
+                    .font(Typo.body(11.5))
+                    .foregroundStyle(Palette.danger)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            VStack(alignment: .leading, spacing: 5) {
+                Text("怎么拿 Key")
+                    .font(Typo.body(11.5, weight: .semibold))
+                    .foregroundStyle(Palette.ink2)
+                noteRow("① breezeblue.ai 首页 → 创建 API Key")
+                noteRow("② 积分上限填 1000，复制 brz_...（只显示一次）")
+                noteRow("③ 粘贴到这里，点「保存并试听」")
+            }
+        }
+        .padding(16)
+        .background(Palette.card)
+        .clipShape(RoundedRectangle(cornerRadius: Radius.md, style: .continuous))
+    }
+
+    private func saveAndTestBreeze() {
+        guard !breezeTesting else { return }
+        if !breezeKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            breeze.save(key: breezeKey)
+        }
+        breezeKey = ""
+        guard breeze.hasKey else {
+            breezeMessage = "请粘贴 BreezeBlue API Key（brz_...）"
+            return
+        }
+        breezeTesting = true
+        breezeMessage = nil
+        Task { @MainActor in
+            do {
+                let entry = BreezeVoiceCast.byCharacterID["swt"]
+                    ?? BreezeVoiceCast.Entry(name: "大肥鱼·迷糊版", voiceID: "voc_8yud7hz7c9q2")
+                let url = try await BreezeTTSClient.synthesize(
+                    text: "呜哇，被你发现啦！我在认真思考呢，才没有摸鱼。",
+                    entry: entry
+                )
+                breezeMessage = "✅ 已连通，下面是苏晚棠的试听"
+                let session = AVAudioSession.sharedInstance()
+                try? session.setCategory(.playback, options: [.duckOthers])
+                try? session.setActive(true)
+                breezePreview = try? AVAudioPlayer(contentsOf: url)
+                breezePreview?.play()
+            } catch {
+                breezeMessage = error.localizedDescription
+            }
+            breezeTesting = false
+        }
+    }
 
     private var azureCard: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -865,6 +1020,40 @@ final class PreviewPlayer: NSObject {
         }
     }
 
+    /// 大肥鱼音色试听：直接走 Breeze，不再用 edge/腾讯的近似音色
+    func toggleBreeze(text: String, entry: BreezeVoiceCast.Entry, tag: String) {
+        if isPlaying && self.tag == tag {
+            stop()
+            return
+        }
+        stop()
+        self.tag = tag
+        isPlaying = true
+        lastError = nil
+        let spoken = VoiceService.spokenPart(of: text)
+        let sampleText = spoken.isEmpty ? text : spoken
+        task = Task { [weak self] in
+            do {
+                let url = try await BreezeTTSClient.synthesize(text: sampleText, entry: entry)
+                try Task.checkCancellation()
+                await MainActor.run {
+                    guard let self, self.tag == tag else { return }
+                    self.play(url: url, rate: 1.0)
+                }
+            } catch is CancellationError {
+                await MainActor.run {
+                    if let self, self.tag == tag { self.isPlaying = false }
+                }
+            } catch {
+                await MainActor.run {
+                    guard let self, self.tag == tag else { return }
+                    self.lastError = "Breeze 试听失败：\(error.localizedDescription)"
+                    self.isPlaying = false
+                }
+            }
+        }
+    }
+
     /// 服务不可达时的设备内置语音兜底（音色按角色气质挑选）
     private func speakWithSystemFallback(_ text: String, kind: VoiceKind) {
         guard !text.isEmpty else { stop(); return }
@@ -910,7 +1099,7 @@ final class PreviewPlayer: NSObject {
     }
 
     /// 本次试听的文本（音频播放失败时系统语音兜底念这段）
-    private var sampleText = "你好，我是你的智能体，这种声音你觉得如何？"
+    private var sampleText = "你好，我是你的角色，这种声音你觉得如何？"
 
     func stop() {
         task?.cancel()

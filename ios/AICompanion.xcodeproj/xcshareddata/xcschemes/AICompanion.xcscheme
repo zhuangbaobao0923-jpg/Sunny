@@ -38,6 +38,16 @@
                ReferencedContainer = "container:AICompanion.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "1A00000000000000000000B1"
+               BuildableName = "AICompanionUITests.xctest"
+               BlueprintName = "AICompanionUITests"
+               ReferencedContainer = "container:AICompanion.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction

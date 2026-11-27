@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>音色试听：大肥鱼两版 · 是否适合夜谈</title>
+<style>
+  :root{
+    --paper:#F8F7F3; --card:#FFFFFF; --ink:#17171C; --ink2:#52525E; --ink3:#8B8B96;
+    --line:#E4E1D8; --line2:#D0CCBF;
+    --indigo:#2E3A6B; --indigo-soft:#EDEFF7;
+    --amber:#9A6A12; --amber-soft:#FBF2DF;
+    --green:#2C6B52; --green-soft:#E8F2EC;
+    --red:#9B3B34; --red-soft:#F8E9E7;
+    --serif:"Songti SC","STSong","SimSun",Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Arial,sans-serif;
+    --mono:"SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.75;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:900px;margin:0 auto;padding:64px 30px 100px}
+  .kicker{font-size:11px;letter-spacing:.2em;color:var(--amber);text-transform:uppercase;margin-bottom:18px}
+  h1{font-family:var(--serif);font-size:38px;line-height:1.3;font-weight:600;margin-bottom:14px}
+  h1 em{font-style:normal;color:var(--indigo)}
+  .lede{font-size:15.5px;color:var(--ink2);max-width:660px;line-height:1.85}
+  .meta{margin-top:24px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--ink3);display:flex;gap:22px;flex-wrap:wrap}
+
+  section{margin-top:56px}
+  h2{font-family:var(--serif);font-size:23px;font-weight:600;margin-bottom:8px}
+  .sub{color:var(--ink2);font-size:13.5px;margin-bottom:20px;max-width:700px}
+  h3{font-size:14.5px;font-weight:600;margin:24px 0 8px}
+  p{color:var(--ink2);margin:8px 0}
+  strong{color:var(--ink);font-weight:600}
+
+  .voices{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .voices.three{grid-template-columns:repeat(3,1fr)}
+  .voices.three .voice{padding:18px}
+  .voices.three .voice h3{font-size:19px}
+  .voices.three .desc{font-size:12.5px;min-height:96px}
+  .voice{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px}
+  .voice.pick{border-color:#B9BED6;box-shadow:0 0 0 3px rgba(46,58,107,.05)}
+  .voice .tagline{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px}
+  .voice h3{margin:0 0 4px;font-family:var(--serif);font-size:21px;font-weight:600}
+  .voice .id{font-family:var(--mono);font-size:11px;color:var(--ink3);margin-bottom:14px;word-break:break-all}
+  audio{width:100%;height:38px;margin:6px 0 12px}
+  .voice .desc{font-size:13px;color:var(--ink2);line-height:1.7;min-height:66px}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+  .chip{font-size:10.5px;padding:3px 8px;border-radius:999px;background:#F1EFE8;color:#5F5E5A}
+  .chip.good{background:var(--green-soft);color:var(--green)}
+  .chip.warn{background:var(--amber-soft);color:var(--amber)}
+  .chip.bad{background:var(--red-soft);color:var(--red)}
+
+  .script{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-top:14px;font-size:13.5px;color:var(--ink2);line-height:1.85}
+  .script b{display:block;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px;font-weight:500}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;margin:12px 0;background:var(--card)}
+  thead th{text-align:left;font-weight:500;font-size:10.5px;letter-spacing:.08em;color:var(--ink3);padding:10px 12px;border-bottom:1px solid var(--line2);text-transform:uppercase;background:#FBFAF7}
+  tbody td{padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink2);line-height:1.65}
+  tbody td:first-child{color:var(--ink);font-weight:500}
+  tbody tr:last-child td{border-bottom:none}
+
+  .pill{display:inline-block;font-size:10.5px;line-height:1;padding:4px 8px;border-radius:999px;white-space:nowrap;font-weight:500}
+  .ok{background:var(--green-soft);color:var(--green)}
+  .warnp{background:var(--amber-soft);color:var(--amber)}
+  .no{background:var(--red-soft);color:var(--red)}
+
+  .callout{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--indigo);border-radius:10px;padding:16px 18px;margin:16px 0}
+  .callout.warn{border-left-color:var(--amber);background:var(--amber-soft)}
+  .callout.danger{border-left-color:var(--red);background:var(--red-soft)}
+  .callout .t{font-weight:600;font-size:13px;margin-bottom:4px;color:var(--ink)}
+  .callout p{font-size:13px;margin:3px 0}
+
+  .score{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px}
+  .row{display:grid;grid-template-columns:150px 1fr 42px;gap:14px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+  .row:last-of-type{border-bottom:none}
+  .row label{font-size:13px;color:var(--ink)}
+  .row label small{display:block;color:var(--ink3);font-size:11px;font-weight:400}
+  input[type=range]{width:100%;accent-color:var(--indigo)}
+  .row .val{font-family:var(--mono);font-size:12px;color:var(--indigo);text-align:right}
+  .total{margin-top:16px;display:flex;align-items:baseline;gap:12px;padding-top:14px;border-top:1px solid var(--line2)}
+  .total .num{font-family:var(--serif);font-size:40px;line-height:1;color:var(--indigo)}
+  .total .verdict{font-size:13px;color:var(--ink2)}
+  .hint{font-size:11.5px;color:var(--ink3);margin-top:6px}
+
+  .steps{counter-reset:s;list-style:none;margin:10px 0}
+  .steps li{counter-increment:s;position:relative;padding-left:34px;margin:12px 0;color:var(--ink2);font-size:13.5px}
+  .steps li::before{content:counter(s);position:absolute;left:0;top:1px;width:22px;height:22px;border-radius:50%;background:var(--indigo-soft);color:var(--indigo);font-size:11px;display:flex;align-items:center;justify-content:center;font-weight:600}
+  code{font-family:var(--mono);font-size:12px;background:#EFEDE6;padding:1.5px 5px;border-radius:4px;color:#3A3A46}
+
+  footer{margin-top:64px;padding-top:20px;border-top:1px solid var(--line);font-size:11.5px;color:var(--ink3);line-height:1.8}
+
+  @media (max-width:760px){
+    .wrap{padding:44px 18px 70px}
+    h1{font-size:30px}
+    .voices{grid-template-columns:1fr}
+    .row{grid-template-columns:110px 1fr 36px}
+    table{font-size:12px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">音色试听 · 只做一件事</div>
+  <h1>先听，再决定<br><em>这个声音适不适合夜谈</em></h1>
+  <p class="lede">你最后定的主推是「大肥鱼 · 偶像版」<code>voc_rn489h83rcvs</code>，加 6 只男声与两只女声对照，一共 9 只。最上面两句是用你的 Key 真实生成的，其余是官方样音。</p>
+  <div class="meta">
+    <span>9 个候选：3 女声 + 6 男声</span>
+    <span>样音 10–25 秒</span>
+    <span>官方样音免 Key</span>
+  </div>
+
+  <section>
+    <h2>刚刚用你的 Key 生成的两句</h2>
+    <p class="sub">不是官方预置样音，是真实调用接口生成的。两句共消耗 7.8 credits，余额 1,795.8 → 1,788.0。</p>
+
+    <div class="voices">
+      <div class="voice">
+        <div class="tagline">真实生成 · 被测句</div>
+        <h3>大肥鱼 · 偶像版</h3>
+        <div class="id">voc_rn489h83rcvs · 5.3 秒 · 4.2 credits</div>
+        <audio controls preload="metadata" src="audio/final/idol/01_test.mp3"></audio>
+        <div class="desc">呜哇，被你发现啦！我在认真思考呢，才没有摸鱼。</div>
+      </div>
+
+      <div class="voice">
+        <div class="tagline">真实生成 · 埋怨</div>
+        <h3>醇厚匠心师</h3>
+        <div class="id">voc_aa4s73p25jt2 · 3.1 秒 · 3.6 credits</div>
+        <audio controls preload="metadata" src="audio/final/craftsman/02_late.mp3"></audio>
+        <div class="desc">你今天怎么这么晚才回来，我等你好久了。</div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="t">听感结论以这两句为准</div>
+      <p>官方样音只能判断底色；这两句是同一套接口、同一组参数生成的，和夜谈里最终听到的一致。如果偶像版这句让你觉得“就是她”，那就可以接进 App 了。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>女声：三个候选，先听差别</h2>
+    <p class="sub">同一段官方文稿，两种演法。迷糊版是你选的；机灵版作为对照，能听出“奶气”和“利落”的边界。</p>
+
+    <div class="voices three">
+      <div class="voice pick">
+        <div class="tagline">夜谈主推 · 成年女性</div>
+        <h3>大肥鱼 · 偶像版</h3>
+        <div class="id">voc_rn489h83rcvs</div>
+        <audio controls preload="metadata" src="audio/dafeiyu-idol.mp3"></audio>
+        <div class="desc">明亮轻盈、带少许气息与旋律感的亲近女声。官方设定是年轻成年女性，语调灵动，句尾会轻轻延展。</div>
+        <div class="chips">
+          <span class="chip">成年</span>
+          <span class="chip">亲近</span>
+          <span class="chip good">官方：温柔陪伴</span>
+        </div>
+      </div>
+
+      <div class="voice">
+        <div class="tagline">你最初选的 · 迷糊版</div>
+        <h3>大肥鱼 · 迷糊版</h3>
+        <div class="id">voc_8yud7hz7c9q2</div>
+        <audio controls preload="metadata" src="audio/dafeiyu-dreamy.mp3"></audio>
+        <div class="desc">清亮柔软、略带奶气的普通话少女音。说话容易慢半拍，嘴硬之后语尾又软下来，带懵懂迟疑与讨好的笑意。</div>
+        <div class="chips">
+          <span class="chip">十六七岁</span>
+          <span class="chip">奶气</span>
+          <span class="chip warn">亲密向慎用</span>
+        </div>
+      </div>
+
+      <div class="voice">
+        <div class="tagline">对照 · 机灵版</div>
+        <h3>大肥鱼 · 机灵版</h3>
+        <div class="id">voc_u3nxkd5578wc</div>
+        <audio controls preload="metadata" src="audio/dafeiyu-clever.mp3"></audio>
+        <div class="desc">清亮甜软、反应轻快的普通话少女音。保留憨萌与嘴硬，短句俏皮，语气转换利落，说到小心思时会轻轻放软。</div>
+        <div class="chips">
+          <span class="chip">少女</span>
+          <span class="chip">轻快</span>
+          <span class="chip">俏皮</span>
+          <span class="chip warn">节奏偏快</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="t">偶像版和迷糊版，差的不只是音色，是年龄</div>
+      <p>偶像版的官方 Prompt 写的是“年轻成年女性”，迷糊版写的是“十六七岁少女”。夜谈如果做成人向的亲密陪伴，优先偶像版；迷糊版更适合非恋爱向的憨憨角色、学妹或小助手。这条比“哪个更好听”更重要。</p>
+    </div>
+
+    <div class="script">
+      <b>两版使用的官方文稿</b>
+      谁是吃白饭的大肥鱼呀？我刚才明明在认真思考！只是……肚子有一点点饿嘛。你先别走，好不好？这次我真的会做对的。哼，做好了也不是为了让你夸我。那个，晚饭能不能多添一碗？就一碗。
+    </div>
+
+    <div class="callout">
+      <div class="t">听的时候注意三件事</div>
+      <p>1. 她是在“跟你说话”，还是在“给观众表演”？<br>2. 语尾是往下沉，还是往上飘？夜谈要的是往下沉、贴耳朵。<br>3. 把音量调到 30%，像夜里外放那样听，齿音和奶气会更明显。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>男声：霸总、成熟、低音炮</h2>
+    <p class="sub">从官方音色库里筛了 6 个普通话男声，按三类分。样音 10–18 秒，先听底色，再想他适不适合你的角色。</p>
+
+    <div class="voices">
+      <div class="voice">
+        <div class="tagline">霸总 · 领袖感</div>
+        <h3>星舰指挥官</h3>
+        <div class="id">voc_q8d8a99gxa7f</div>
+        <audio controls preload="metadata" src="audio/commander.mp3"></audio>
+        <div class="desc">沉稳有力的中年男性音色，吐字清晰且富有威严感。适合高压环境下的叙事与决策场景。</div>
+        <div class="chips"><span class="chip">霸总</span><span class="chip">威严</span><span class="chip good">不油腻</span></div>
+      </div>
+
+      <div class="voice">
+        <div class="tagline">霸总 · 强硬派</div>
+        <h3>铁血教头</h3>
+        <div class="id">voc_mvdhh8xj9e7k</div>
+        <audio controls preload="metadata" src="audio/iron-instructor.mp3"></audio>
+        <div class="desc">粗犷有力、中气十足，节奏感强，带明显的严厉与威慑力。更接近“训话”，不是“哄人”。</div>
+        <div class="chips"><span class="chip">霸总</span><span class="chip">硬朗</span><span class="chip warn">亲密戏会硬</span></div>
+      </div>
+
+      <div class="voice">
+        <div class="tagline">低音炮 · 压迫感</div>
+        <h3>深海低语者</h3>
+        <div class="id">voc_mtb2gb2f565z</div>
+        <audio controls preload="metadata" src="audio/deep-whisperer.mp3"></audio>
+        <div class="desc">气息深沉、质地柔韧，语速缓慢，句间留白有悬疑感。压迫感最强的一只。</div>
+        <div class="chips"><span class="chip">低音炮</span><span class="chip">气声</span><span class="chip warn">长聊会累</span></div>
+      </div>
+
+      <div class="voice">
+        <div class="tagline">低音炮 · 神秘感</div>
+        <h3>幽巷引路人</h3>
+        <div class="id">voc_gbaz4j9uyq97</div>
+        <audio controls preload="metadata" src="audio/deep-bass.mp3"></audio>
+        <div class="desc">深沉的低频质感与克制的呼吸感，语速舒缓、节奏清楚。像深夜电台，不像白天的人。</div>
+        <div class="chips"><span class="chip">低音炮</span><span class="chip">磁性</span><span class="chip good">深夜感</span></div>
+      </div>
+
+      <div class="voice">
+        <div class="tagline">成熟 · 戏剧张力</div>
+        <h3>幕后独白者</h3>
+        <div class="id">voc_k7tz43q2yxc2</div>
+        <audio controls preload="metadata" src="audio/mature-monologue.mp3"></audio>
+        <div class="desc">嗓音磁性、共鸣丰富，语速沉稳，带话剧舞台功底。适合有故事、有过去的人。</div>
+        <div class="chips"><span class="chip">成熟</span><span class="chip">醇厚</span><span class="chip">年上</span></div>
+      </div>
+
+      <div class="voice">
+        <div class="tagline">成熟 · 温柔年上</div>
+        <h3>醇厚匠心师</h3>
+        <div class="id">voc_aa4s73p25jt2</div>
+        <audio controls preload="metadata" src="audio/magnetic-craftsman.mp3"></audio>
+        <div class="desc">低音深沉、胸腔共鸣丰富，语速舒缓从容，透出成熟男性的分寸感。六只里最不“演”的一只。</div>
+        <div class="chips"><span class="chip">成熟</span><span class="chip">磁性</span><span class="chip good">适合夜谈</span></div>
+      </div>
+    </div>
+
+    <table>
+      <thead><tr><th style="width:20%">类型</th><th style="width:30%">最适合的角色</th><th>夜谈里的风险</th></tr></thead>
+      <tbody>
+        <tr><td>霸总</td><td>强势、掌控感、年上男主</td><td>容易像预告片或训话；一到亲密戏就硬，需要 instructions 收力</td></tr>
+        <tr><td>低音炮</td><td>神秘、深夜电台、压迫型反派</td><td>气声多、语速慢，短句很抓耳，长对话会累</td></tr>
+        <tr><td>成熟</td><td>温柔年上、稳重、治愈型</td><td>年龄感偏 35–45；角色设定若二十多岁会出戏</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout warn">
+      <div class="t">官方还有一只更贴“霸总”的，但它是英文原生</div>
+      <p>音色库里有「Benjamin — CEO Boyfriend」，气质是“董事会上冷静、只对你放软”的男中音，几乎是霸总模板。但它的样本和 Prompt 都是英文，中文效果未验证，所以没放进候选。如果你想要双语角色，可以后面单独测它。</p>
+    </div>
+
+    <div class="callout">
+      <div class="t">如果夜谈只试一只男声，先试「醇厚匠心师」</div>
+      <p>它不是最炸的低音炮，但最像“在跟你说话”，而不是“在给广告配音”。如果男主设定是温柔年上，这只的起点最稳；要更强势再换星舰指挥官，要更神秘再换幽巷引路人。</p>
+    </div>
+
+    <p class="sub" style="margin-top:14px">这 6 只的官方案例多为预告片、广告、旁白，天然带“演”的成分。真正要听的是它们念“我等你很久了”“别走”这类短句时，会不会露出播音腔。</p>
+  </section>
+
+  <section>
+    <h2>当前工作清单：9 只</h2>
+    <p class="sub">你最后给的 7 只里只有 1 只女声；夜谈有 3 个女角色，所以把迷糊版、机灵版加回来，正好一人一只。男声 6 只保持不变。</p>
+
+    <table>
+      <thead><tr><th style="width:24%">用途</th><th style="width:30%">音色</th><th>Voice ID</th></tr></thead>
+      <tbody>
+        <tr><td>女声 · 纳兰铮</td><td>大肥鱼 · 偶像版</td><td><code>voc_rn489h83rcvs</code></td></tr>
+        <tr><td>女声 · 苏晚棠</td><td>大肥鱼 · 迷糊版</td><td><code>voc_8yud7hz7c9q2</code></td></tr>
+        <tr><td>女声 · 凌云裳</td><td>大肥鱼 · 机灵版</td><td><code>voc_u3nxkd5578wc</code></td></tr>
+        <tr><td>男声 · 沈惊寒</td><td>幽巷引路人</td><td><code>voc_gbaz4j9uyq97</code></td></tr>
+        <tr><td>男声 · 谢无咎</td><td>深海低语者</td><td><code>voc_mtb2gb2f565z</code></td></tr>
+        <tr><td>男声 · 萧玄策</td><td>铁血教头</td><td><code>voc_mvdhh8xj9e7k</code></td></tr>
+        <tr><td>男声 · 裴经年</td><td>醇厚匠心师</td><td><code>voc_aa4s73p25jt2</code></td></tr>
+        <tr><td>男声 · 备用</td><td>星舰指挥官</td><td><code>voc_q8d8a99gxa7f</code></td></tr>
+        <tr><td>男声 · 备用</td><td>幕后独白者</td><td><code>voc_k7tz43q2yxc2</code></td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <div class="t">女声 3 个坑位，先占住不等于定稿</div>
+      <p>之后你看到更合适的女声，只换 <code>voice_id</code>，不动代码。三个角色一人一只，至少不会同声；如果最后只想要两只女声，把其中一个角色合并过去就行。</p>
+    </div>
+
+    <div class="callout">
+      <div class="t">这 9 只不用“保存”到账号</div>
+      <p>它们都在官方公开音色库里，调用时把 <code>voice_id</code> 传给接口即可，不占你的 5 个音色槽。只有自己设计或克隆的私有音色才需要保存。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>它和夜谈的匹配度</h2>
+    <p class="sub">不猜“好不好听”，只看它和你产品里角色的关系。</p>
+
+    <table>
+      <thead><tr><th style="width:30%">夜谈里的用法</th><th style="width:22%">匹配度</th><th>原因</th></tr></thead>
+      <tbody>
+        <tr><td>憨憨学妹 / 小助手 / 宠物拟人（迷糊版）</td><td><span class="pill ok">高</span></td><td>“慢半拍、嘴硬、语尾软”正好是这个角色的骨架，不用额外演</td></tr>
+        <tr><td>治愈系日常陪伴（两版都行）</td><td><span class="pill ok">高</span></td><td>官方都标了“温柔陪伴场景”，清亮不刺耳，长时间听不累</td></tr>
+        <tr><td>撒娇 / 吃醋 / 嘴硬（两版）</td><td><span class="pill ok">高</span></td><td>声音本身就在这个情绪区间里，几乎不用 instructions</td></tr>
+        <tr><td>成年亲密陪伴 / 恋人感（偶像版）</td><td><span class="pill ok">高</span></td><td>官方设定是年轻成年女性，语调轻、句尾会延展，这 7 只里最贴“她”</td></tr>
+        <tr><td>深夜低语 / 成年女性（迷糊版）</td><td><span class="pill no">低</span></td><td>16–17 岁 + 奶气 + 憨感，听起来更像“妹妹”，不是“她”</td></tr>
+        <tr><td>认真安慰 / 长时间倾诉</td><td><span class="pill warnp">中</span></td><td>两版情绪一收都容易回到“甜”，需要用 instructions 压住</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout warn">
+      <div class="t">一个必须说的风险</div>
+      <p>迷糊版的官方定义是“十六七岁少女”。如果夜谈的角色涉及恋爱、亲密或性暗示内容，不要用迷糊版做主线，观感和合规都不合适。它可以做非恋爱向的“学妹 / 小助手 / 拟人宠物”。偶像版是年轻成年女性，没有这个问题。</p>
+    </div>
+
+    <h3>一句话判断</h3>
+    <p><strong>成年、温柔、恋人感</strong>：用偶像版，这 7 只里它最合适。<strong>憨憨少女、学妹、小助手</strong>：用迷糊版，记忆点更强。<strong>两个都要</strong>：偶像版做主线，迷糊版做妹妹或配角，声音有区分度。</p>
+    <p>你最后给的清单里主推是偶像版，这个选择在定位上是对的。</p>
+  </section>
+
+  <section>
+    <h2>按夜谈的标准打个分</h2>
+    <p class="sub">拖动滑杆，1–5 分。权重按睡前陪伴场景定，总分 100。建议手机外放 30% 音量听一遍再打。</p>
+
+    <div class="score" id="score">
+      <div class="row"><label>音色本体<small>像不像一个具体的人</small></label><input type="range" min="1" max="5" value="4" data-w="25"><span class="val">4</span></div>
+      <div class="row"><label>亲密距离感<small>贴耳，还是表演</small></label><input type="range" min="1" max="5" value="3" data-w="20"><span class="val">3</span></div>
+      <div class="row"><label>情绪可塑性<small>撒娇、困倦、安慰都能演</small></label><input type="range" min="1" max="5" value="3" data-w="20"><span class="val">3</span></div>
+      <div class="row"><label>普通话与咬字<small>标准、清楚、无口音</small></label><input type="range" min="1" max="5" value="5" data-w="15"><span class="val">5</span></div>
+      <div class="row"><label>低音量外放<small>30% 音量下是否清楚</small></label><input type="range" min="1" max="5" value="4" data-w="10"><span class="val">4</span></div>
+      <div class="row"><label>稳定性与延迟<small>20 句里会不会崩</small></label><input type="range" min="1" max="5" value="4" data-w="10"><span class="val">4</span></div>
+      <div class="total">
+        <div class="num" id="total">75</div>
+        <div class="verdict" id="verdict">有条件可用：只做配角或特定角色</div>
+      </div>
+      <div class="hint">≥80 可做 App 主推；65–79 只做配角/长音频；&lt;65 只留在 QQ 侧。</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>想让它说夜谈的台词，只差一步</h2>
+    <p class="sub">不需要 AstrBot，也不需要动 QQ。夜谈是 iOS App，直接调 BreezeBlue 的 HTTP 接口就行。</p>
+
+    <ol class="steps">
+      <li>登录 <strong>breezeblue.ai</strong>，在开发者页创建一个 API Key。免费档每天可领 400 credits，够生成几十句测试。</li>
+      <li>把 Key 写进本机文件 <code>~/.breeze_key</code>（只写一行），不要发在聊天里。我写好的脚本会从文件读，不回显。</li>
+      <li>我用夜谈的 6 句台词各生成一遍：撒娇、困倦、吃醋、安慰、笑骂、被测句。你听完再决定接不接。</li>
+      <li>决定接，就在 App 里加一个 <code>BreezeVoiceClient</code>，只给指定角色用；通话仍走本地引擎，语音条走云端。</li>
+    </ol>
+
+    <div class="callout">
+      <div class="t">为什么只用这一小步</div>
+      <p>样音是官方预置文稿，只能判断“音色底色”。真正决定适配的是它念夜谈台词时的表现，尤其是困倦、口是心非、带笑的骂这三句。这 6 句生成成本约 26 credits，不到一分钱一条。</p>
+    </div>
+  </section>
+
+  <footer>
+    <p>女声：BreezeBlue 官方音色库「大肥鱼 · 偶像版 / 迷糊版 / 机灵版」。男声：官方音色库「星舰指挥官、铁血教头、深海低语者、幽巷引路人、幕后独白者、醇厚匠心师」。样音均为官方预置文稿，已下载至 <code>docs/audio/</code>。官方描述原文引用，未改写。</p>
+    <p>本页只判断音色，不涉及 AstrBot、QQ 插件或部署配置。听感结论以你实际听到的为准，文字描述只能做初筛。</p>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  var rows = Array.prototype.slice.call(document.querySelectorAll('#score .row'));
+  var totalEl = document.getElementById('total');
+  var verdictEl = document.getElementById('verdict');
+  function update(){
+    var sum = 0;
+    rows.forEach(function(r){
+      var input = r.querySelector('input');
+      var v = parseInt(input.value, 10);
+      r.querySelector('.val').textContent = v;
+      sum += (v / 5) * parseInt(input.getAttribute('data-w'), 10);
+    });
+    sum = Math.round(sum);
+    totalEl.textContent = sum;
+    if (sum >= 80) verdictEl.textContent = '可以进 App，做主推候选';
+    else if (sum >= 65) verdictEl.textContent = '有条件可用：只做配角或特定角色';
+    else verdictEl.textContent = '不建议进 App，留在 QQ 侧';
+  }
+  rows.forEach(function(r){ r.querySelector('input').addEventListener('input', update); });
+  update();
+})();
+</script>
+</body>
+</html>

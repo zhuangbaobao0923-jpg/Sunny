@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>选声决赛：六类女角色与皇后候选</title>
+<style>
+  :root{
+    --paper:#F8F7F3; --card:#FFFFFF; --ink:#17171C; --ink2:#52525E; --ink3:#8B8B96;
+    --line:#E4E1D8; --line2:#D0CCBF;
+    --indigo:#2E3A6B; --indigo-soft:#EDEFF7;
+    --amber:#9A6A12; --amber-soft:#FBF2DF;
+    --green:#2C6B52; --green-soft:#E8F2EC;
+    --red:#9B3B34; --red-soft:#F8E9E7;
+    --serif:"Songti SC","STSong","SimSun",Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Arial,sans-serif;
+    --mono:"SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.75;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px;margin:0 auto;padding:64px 30px 100px}
+  .kicker{font-size:11px;letter-spacing:.2em;color:var(--amber);text-transform:uppercase;margin-bottom:18px}
+  h1{font-family:var(--serif);font-size:40px;line-height:1.28;font-weight:600;margin-bottom:14px}
+  h1 em{font-style:normal;color:var(--indigo)}
+  .lede{font-size:15.5px;color:var(--ink2);max-width:720px;line-height:1.85}
+  .meta{margin-top:24px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--ink3);display:flex;gap:22px;flex-wrap:wrap}
+  section{margin-top:58px}
+  h2{font-family:var(--serif);font-size:25px;font-weight:600;margin-bottom:8px}
+  .sub{font-size:13.5px;color:var(--ink2);margin-bottom:18px;max-width:760px;line-height:1.8}
+  p{color:var(--ink2);margin:8px 0}
+  strong{color:var(--ink);font-weight:600}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;margin:12px 0;background:var(--card)}
+  thead th{text-align:left;font-weight:500;font-size:10.5px;letter-spacing:.08em;color:var(--ink3);padding:10px 12px;border-bottom:1px solid var(--line2);text-transform:uppercase;background:#FBFAF7}
+  tbody td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink2);line-height:1.65}
+  tbody td:first-child{color:var(--ink);font-weight:500;white-space:nowrap}
+  tbody tr:last-child td{border-bottom:none}
+
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:6px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:18px}
+  .card.pick{border-color:#B9BED6;box-shadow:0 0 0 3px rgba(46,58,107,.05)}
+  .card .tag{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-bottom:4px}
+  .card h3{font-family:var(--serif);font-size:19px;font-weight:600;margin-bottom:2px}
+  .card .id{font-family:var(--mono);font-size:10.5px;color:var(--ink3);margin-bottom:8px;word-break:break-all}
+  audio{width:100%;height:36px;margin:2px 0 8px}
+  .card .note{font-size:12px;color:var(--ink2);line-height:1.65;min-height:44px}
+  .pill{display:inline-block;font-size:10px;line-height:1;padding:4px 7px;border-radius:999px;font-weight:500}
+  .ok{background:var(--green-soft);color:var(--green)}
+  .warnp{background:var(--amber-soft);color:var(--amber)}
+  .no{background:var(--red-soft);color:var(--red)}
+  .info{background:var(--indigo-soft);color:var(--indigo)}
+
+  .callout{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--indigo);border-radius:10px;padding:15px 17px;margin:16px 0}
+  .callout.warn{border-left-color:var(--amber);background:var(--amber-soft)}
+  .callout .t{font-weight:600;font-size:13px;margin-bottom:4px;color:var(--ink)}
+  .callout p{font-size:12.8px;margin:3px 0}
+  code{font-family:var(--mono);font-size:12px;background:#EFEDE6;padding:1.5px 5px;border-radius:4px;color:#3A3A46}
+  footer{margin-top:64px;padding-top:20px;border-top:1px solid var(--line);font-size:11.5px;color:var(--ink3);line-height:1.8}
+  @media (max-width:780px){
+    .wrap{padding:44px 18px 70px}
+    h1{font-size:30px}
+    .cards{grid-template-columns:1fr}
+    table{font-size:12px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">选声决赛 · 2026-11-25</div>
+  <h1>六席已定<br><em>名单锁定，开始接 App</em></h1>
+  <p class="lede">女将军锁定 0.95；皇后改用声音设计，“凤仪 · 厚”已保存为私有音色。宠妃、公主、女帝、邻家妹妹按你的意见定下，大肥鱼三版保留。</p>
+  <div class="meta">
+    <span>6 类女角色</span>
+    <span>皇后已保存</span>
+    <span>女将军 0.95</span>
+  </div>
+
+  <section>
+    <h2>已定名单</h2>
+    <p class="sub">女帝我从两只里选了冷峻调查官：它更“不怒自威”，寒蝉低语更偏“冷冽锋利”，适合摄政长公主或刺客，不像坐龙椅的人。</p>
+    <table>
+      <thead><tr><th style="width:20%">角色类型</th><th style="width:26%">音色</th><th style="width:30%">Voice ID</th><th>状态</th></tr></thead>
+      <tbody>
+        <tr><td>女将军</td><td>冷面铁捕</td><td><code>voc_4fcdc882gyps</code></td><td><span class="pill ok">已定 · 0.95</span></td></tr>
+        <tr><td>皇后</td><td>凤仪（皇后）· 厚</td><td><code>voc_psyuun5rky74</code></td><td><span class="pill ok">已定</span></td></tr>
+        <tr><td>宠妃</td><td>幽兰影</td><td><code>voc_dcccp6b9p466</code></td><td><span class="pill ok">已定</span></td></tr>
+        <tr><td>公主 / 郡主</td><td>灵动汐语</td><td><code>voc_tzneby749yja</code></td><td><span class="pill ok">已定</span></td></tr>
+        <tr><td>女帝</td><td>冷峻调查官</td><td><code>voc_4xhyh9d63huc</code></td><td><span class="pill ok">已定</span></td></tr>
+        <tr><td>邻家妹妹</td><td>邻家暖心</td><td><code>voc_p36dbdewwvae</code></td><td><span class="pill ok">已定</span></td></tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <div class="t">大肥鱼三版全部保留</div>
+      <p>偶像版 <code>voc_rn489h83rcvs</code>、迷糊版 <code>voc_8yud7hz7c9q2</code>、机灵版 <code>voc_u3nxkd5578wc</code>。三只不冲突，可以分给三个不同气质的少女角色；具体分配等新角色表出来再定。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>女将军：语速三档</h2>
+    <p class="sub">同一只冷面铁捕、同一句“全军听令，守住北门，一个人都不许退”。只改 <code>voice_settings.speed</code>，不改音高。</p>
+    <div class="cards">
+      <div class="card">
+        <div class="tag">A · 原速</div>
+        <h3>1.00</h3>
+        <div class="id">2.93 秒</div>
+        <audio controls preload="metadata" src="audio/roles/general-iron-speed-100.mp3"></audio>
+        <div class="note">你之前听到的速度。偏快，适合短促军令，不适合长句训话。</div>
+      </div>
+      <div class="card pick">
+        <div class="tag">B · 已选</div>
+        <h3>0.95</h3>
+        <div class="id">3.67 秒</div>
+        <audio controls preload="metadata" src="audio/roles/general-iron-speed-095.mp3"></audio>
+        <div class="note">慢 5%，字头仍然利落，但句间有呼吸。最贴“快了一点点点”的修正。</div>
+      </div>
+      <div class="card">
+        <div class="tag">C · 更稳</div>
+        <h3>0.92</h3>
+        <div class="id">3.29 秒</div>
+        <audio controls preload="metadata" src="audio/roles/general-iron-speed-092.mp3"></audio>
+        <div class="note">更慢、更沉，适合主帅训话；再慢就会失去“利落”的味道。</div>
+      </div>
+    </div>
+    <div class="callout warn">
+      <div class="t">别用时长判断语速</div>
+      <p>B 的时长反而比 C 长，是模型在这句里加了停顿，不代表 B 更慢。以耳朵听到的“字与字之间的速度”为准。0.95 和 0.92 都慢得不多，差别主要在停顿。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>皇后：声音设计三选一</h2>
+    <p class="sub">按你表里的描述生成：“饱满醇厚、温润如玉、气息平稳、不急不徐、母仪天下的威严与包容、情绪克制”。三只是同一条描述的三种演绎。</p>
+    <div class="cards">
+      <div class="card">
+        <div class="tag">候选 1 · 已保存</div>
+        <h3>凤仪 · 厚</h3>
+        <div class="id">gvi_rgsj8gdk5vf4 · 5.7 秒</div>
+        <audio controls preload="metadata" src="audio/roles/empress-design-1.mp3"></audio>
+        <div class="note">共鸣最足，尾音收得稳，像已经在后位坐了很多年。</div>
+      </div>
+      <div class="card">
+        <div class="tag">候选 2</div>
+        <h3>凤仪 · 温</h3>
+        <div class="id">gvi_gdkb7cvd3tz9 · 5.5 秒</div>
+        <audio controls preload="metadata" src="audio/roles/empress-design-2.mp3"></audio>
+        <div class="note">更温润、更靠近“包容”，训诫感弱一点，日常对话更自然。</div>
+      </div>
+      <div class="card">
+        <div class="tag">候选 3</div>
+        <h3>凤仪 · 冷</h3>
+        <div class="id">gvi_hhjwdq36mpxr · 5.4 秒</div>
+        <audio controls preload="metadata" src="audio/roles/empress-design-3.mp3"></audio>
+        <div class="note">更冷、更薄，威压在前，温柔在后；适合不太得宠、靠手腕坐稳的皇后。</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="t">已保存：凤仪（皇后）· <code>voc_psyuun5rky74</code></div>
+      <p>候选 1（厚）已保存为你的私有音色，占 1 个音色槽。候选 2、3 仍是临时预览、未保存；以后想换“冷”版，告诉我再保存候选 3。</p>
+      <p style="margin-top:10px">用保存后的 voice_id 重新生成了一句，确认可用：</p>
+      <audio controls preload="metadata" src="audio/roles/empress-final.mp3"></audio>
+    </div>
+    <div class="callout warn">
+      <div class="t">如果三只都不对</div>
+      <p>告诉我差在哪：太老、太温、太冷、还是不够“母仪”。我改描述再生成一批，一次 3 只，成本约 4 credits，比在 254 只现成库里继续翻快得多。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>男声 6 只保持不变</h2>
+    <table>
+      <thead><tr><th style="width:26%">用途</th><th style="width:30%">音色</th><th>Voice ID</th></tr></thead>
+      <tbody>
+        <tr><td>沈惊寒</td><td>幽巷引路人</td><td><code>voc_gbaz4j9uyq97</code></td></tr>
+        <tr><td>谢无咎</td><td>深海低语者</td><td><code>voc_mtb2gb2f565z</code></td></tr>
+        <tr><td>萧玄策</td><td>铁血教头</td><td><code>voc_mvdhh8xj9e7k</code></td></tr>
+        <tr><td>裴经年</td><td>醇厚匠心师</td><td><code>voc_aa4s73p25jt2</code></td></tr>
+        <tr><td>备用 · 霸总</td><td>星舰指挥官</td><td><code>voc_q8d8a99gxa7f</code></td></tr>
+        <tr><td>备用 · 戏剧</td><td>幕后独白者</td><td><code>voc_k7tz43q2yxc2</code></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>名单已锁定，下一步接 App</h2>
+    <p>女将军锁定 <strong>0.95</strong>；皇后保存为 <strong>凤仪（皇后）</strong> <code>voc_psyuun5rky74</code>。完整名单在 <code>docs/voice-cast.json</code>。</p>
+    <p>接下来我会在 iOS 里加 <code>BreezeVoiceClient</code>，先让一个角色说一句；Breeze 只用于点语音条播放，通话仍走本地引擎。</p>
+  </section>
+
+  <footer>
+    <p>女将军语速样本与皇后设计样本均为真实调用 BreezeBlue 生成，非官方预置。皇后三只为临时预览，保存在 <code>docs/audio/roles/empress-design-*.mp3</code>，对应 <code>generated_voice_id</code> 见上。</p>
+    <p>大肥鱼三版、男声 6 只均为官方公开音色，不占音色槽；皇后保存后会占 1 个。</p>
+  </footer>
+
+</div>
+</body>
+</html>
